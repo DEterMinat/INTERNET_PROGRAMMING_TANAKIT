@@ -1,11 +1,7 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet, View, Text } from 'react-native';
 import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 
 function ProfileCard() {
   const [profiles, setProfiles] = useState<any[]>([]);
@@ -14,7 +10,7 @@ function ProfileCard() {
   useEffect(() => {
     const loadProfiles = async () => {
       try {
-        const response = await fetch('/profiles.json');
+        const response = await fetch('https://raw.githubusercontent.com/DEterMinat/INTERNET_PROGRAMMING_TANAKIT/refs/heads/main/public/profiles.json');
         const data = await response.json();
         setProfiles(data);
       } catch (err: any) {
