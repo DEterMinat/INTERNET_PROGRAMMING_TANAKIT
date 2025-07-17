@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Mr. Tanakit",
+    "title": "Data Engineering",
+    "phone": "081-234-5678",
+    "email": "tanakit@example.com",
+    "image": "profile1.png"
+  },
+  {
+    "name": "Mr.Wave",
+    "title": "Mobile Dev",
+    "phone": "089-111-2222",
+    "email": "wave@example.com",
+    "image": "profile2.png"
+  },
+  {
+    "name": "Mr. Nut",
+    "title": "Full Stack Developer",
+    "phone": "086-333-4444",
+    "email": "nut@example.com",
+    "image": "profile3.png"
+  }
+]
