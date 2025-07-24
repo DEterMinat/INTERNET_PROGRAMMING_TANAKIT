@@ -5,7 +5,7 @@ export const config = {
   // API Base URLs
   api: {
     development: 'http://localhost:9785/api',
-    production: 'http://nindam.sytes.net/api',
+    production: 'http://119.59.102.61:9785/api',
     get baseUrl() {
       return isDevelopment ? this.development : this.production;
     }
