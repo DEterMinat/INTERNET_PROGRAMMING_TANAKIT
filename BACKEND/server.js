@@ -4,10 +4,6 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 require('dotenv').config();
 
-// Import database configuration and models
-const { testConnection, syncDatabase } = require('./config/database');
-const { runSeeders } = require('./seeders');
-
 const app = express();
 const port = process.env.PORT || 9785;
 
@@ -68,38 +64,19 @@ app.use((err, req, res, next) => {
 // Database initialization and server start
 const startServer = async () => {
   try {
-    // Test database connection
-    const isConnected = await testConnection();
+    // Force use mock data mode (database connection disabled)
+    console.log('� Using mock data mode (Database connection disabled)');
     
-    if (isConnected) {
-      // Use database routes
-      console.log('🗄️  Using database mode');
-      
-      // Sync database (create tables if they don't exist)
-      await syncDatabase();
-      
-      // Run seeders to populate initial data
-      await runSeeders();
-      
-      // Use database routes
-      app.use('/api/products', require('./routes/products_db'));
-      app.use('/api/users', require('./routes/users_db'));
-      app.use('/api/auth', require('./routes/auth_db'));
-    } else {
-      // Use mock data routes
-      console.log('📋 Using mock data mode');
-      
-      // Use original mock routes
-      app.use('/api/products', require('./routes/products'));
-      app.use('/api/users', require('./routes/users'));
-      app.use('/api/auth', require('./routes/auth'));
-    }
+    // Use original mock routes only
+    app.use('/api/products', require('./routes/products'));
+    app.use('/api/users', require('./routes/users'));
+    app.use('/api/auth', require('./routes/auth'));
     
     // Start server
     app.listen(port, () => {
       console.log(`🚀 Server running at http://localhost:${port}`);
       console.log(`📖 API Documentation available at http://localhost:${port}`);
-      console.log(`🗄️  Database: ${isConnected ? `Connected to ${process.env.DB_NAME || 'MySQL'}` : 'Using mock data'}`);
+      console.log(`🗄️  Database: Using mock data (DB connection disabled)`);
     });
     
   } catch (error) {
