@@ -24,7 +24,7 @@ function ProfileCard() {
       try {
         // Try to load from backend API first
         try {
-          const response = await usersApi.getAll();
+          const response = await usersApi.getPublic(10);
           if (response.success && response.data) {
             setProfiles(response.data);
             return;

@@ -82,8 +82,19 @@ BACKEND/
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `NODE_ENV` | Environment (development/production) | development |
-| `PORT` | Server port | 3000 |
+| `PORT` | Server port | 9785 |
 | `CORS_ORIGIN` | CORS allowed origin | http://localhost:8081 |
+| `JWT_SECRET` | JWT signing secret | your-secret-key |
+| `JWT_EXPIRES_IN` | JWT expiration time | 24h |
+
+## Production Deployment
+
+The API is deployed at: **http://nindam.sytes.net/**
+
+### Production Endpoints
+- Base URL: `http://nindam.sytes.net/api`
+- Health Check: `http://nindam.sytes.net/health`
+- API Info: `http://nindam.sytes.net/`
 
 ## Mock Data
 
@@ -129,21 +140,29 @@ The server uses mock data for demonstration purposes:
 Use tools like Postman, Insomnia, or curl to test the API endpoints.
 
 Example:
+
 ```bash
 # Get all products
-curl http://localhost:3000/api/products
+curl http://nindam.sytes.net/api/products
 
 # Login user
-curl -X POST http://localhost:3000/api/auth/login \
+curl -X POST http://nindam.sytes.net/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"john.doe@example.com","password":"password123"}'
+  -d '{"login":"john.doe@example.com","password":"password123"}'
 ```
+
+## Completed Features
+
+- [x] JWT authentication with secure tokens
+- [x] Password hashing with bcryptjs
+- [x] Input validation with express-validator
+- [x] Authentication middleware
+- [x] Production deployment ready
 
 ## Future Enhancements
 
 - [ ] Database integration (MongoDB/PostgreSQL)
 - [ ] JWT authentication with refresh tokens
-- [ ] Password hashing with bcrypt
 - [ ] File upload for product images
 - [ ] Email service integration
 - [ ] Rate limiting

@@ -1,4 +1,6 @@
 const express = require('express');
+const { Op } = require('sequelize');
+const { Product } = require('../models');
 const router = express.Router();
 
 // Mock products data - same as frontend

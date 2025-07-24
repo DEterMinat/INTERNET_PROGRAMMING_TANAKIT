@@ -1,5 +1,7 @@
+import { config } from '../config/environment';
+
 // API configuration
-const API_BASE_URL = 'http://localhost:9785/api';
+const API_BASE_URL = config.api.baseUrl;
 
 // Product interfaces
 export interface Product {
@@ -178,17 +180,38 @@ export const authApi = {
 
 // Users API
 export const usersApi = {
-  // Get all users
+  // Get all users (Admin only)
   getAll: async (params?: {
     role?: string;
     active?: boolean;
+    limit?: number;
+    offset?: number;
+    search?: string;
   }): Promise<ApiResponse<User[]>> => {
     const searchParams = new URLSearchParams();
     
     if (params?.role) searchParams.append('role', params.role);
     if (params?.active !== undefined) searchParams.append('active', params.active.toString());
+    if (params?.limit) searchParams.append('limit', params.limit.toString());
+    if (params?.offset) searchParams.append('offset', params.offset.toString());
+    if (params?.search) searchParams.append('search', params.search);
     
     const url = `${API_BASE_URL}/users?${searchParams.toString()}`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.json();
+  },
+
+  // Get public user profiles (for display purposes)
+  getPublic: async (limit?: number): Promise<ApiResponse<User[]>> => {
+    const searchParams = new URLSearchParams();
+    if (limit) searchParams.append('limit', limit.toString());
+    
+    const url = `${API_BASE_URL}/users/public?${searchParams.toString()}`;
     const response = await fetch(url);
     
     if (!response.ok) {
@@ -210,17 +233,41 @@ export const usersApi = {
   }
 };
 
-// Generic API error handler
+// Enhanced API error handler
 export const handleApiError = (error: any): string => {
+  console.error('API Error:', error);
+  
+  if (error.message?.includes('NetworkError') || error.message?.includes('fetch')) {
+    return 'Network error. Please check your internet connection or try again later.';
+  }
+  
+  if (error.message?.includes('404')) {
+    return 'API endpoint not found. Please check if the server is running.';
+  }
+  
+  if (error.message?.includes('500')) {
+    return 'Server error. Please try again later.';
+  }
+  
+  if (error.message?.includes('401')) {
+    return 'Authentication required. Please log in again.';
+  }
+  
+  if (error.message?.includes('403')) {
+    return 'Access denied. You do not have permission to perform this action.';
+  }
+  
+  // Check if we have a response with error data
   if (error.response && error.response.data && error.response.data.message) {
     return error.response.data.message;
   }
   
-  if (error.message) {
-    return error.message;
+  // For development, show more detailed errors
+  if (config.isDevelopment) {
+    return error.message || 'An unexpected error occurred during development';
   }
   
-  return 'An unexpected error occurred';
+  return error.message || 'An unexpected error occurred. Please try again.';
 };
 
 export default {

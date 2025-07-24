@@ -4,6 +4,10 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 require('dotenv').config();
 
+// Import database configuration and models
+const { testConnection, syncDatabase } = require('./config/database');
+const { runSeeders } = require('./seeders');
+
 const app = express();
 const port = process.env.PORT || 9785;
 
@@ -14,15 +18,13 @@ app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Import routes
-const productsRoutes = require('./routes/products');
-const usersRoutes = require('./routes/users');
-const authRoutes = require('./routes/auth');
+// Import routes (use database versions)
+// Routes will be loaded dynamically based on database connection
 
-// Use routes
-app.use('/api/products', productsRoutes);
-app.use('/api/users', usersRoutes);
-app.use('/api/auth', authRoutes);
+// Use routes (will be set dynamically)
+// app.use('/api/products', productsRoutes);
+// app.use('/api/users', usersRoutes);
+// app.use('/api/auth', authRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -63,10 +65,50 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
-app.listen(port, () => {
-  console.log(`🚀 Server running at http://localhost:${port}`);
-  console.log(`📖 API Documentation available at http://localhost:${port}`);
-});
+// Database initialization and server start
+const startServer = async () => {
+  try {
+    // Test database connection
+    const isConnected = await testConnection();
+    
+    if (isConnected) {
+      // Use database routes
+      console.log('🗄️  Using database mode');
+      
+      // Sync database (create tables if they don't exist)
+      await syncDatabase();
+      
+      // Run seeders to populate initial data
+      await runSeeders();
+      
+      // Use database routes
+      app.use('/api/products', require('./routes/products_db'));
+      app.use('/api/users', require('./routes/users_db'));
+      app.use('/api/auth', require('./routes/auth_db'));
+    } else {
+      // Use mock data routes
+      console.log('📋 Using mock data mode');
+      
+      // Use original mock routes
+      app.use('/api/products', require('./routes/products'));
+      app.use('/api/users', require('./routes/users'));
+      app.use('/api/auth', require('./routes/auth'));
+    }
+    
+    // Start server
+    app.listen(port, () => {
+      console.log(`🚀 Server running at http://localhost:${port}`);
+      console.log(`📖 API Documentation available at http://localhost:${port}`);
+      console.log(`🗄️  Database: ${isConnected ? `Connected to ${process.env.DB_NAME || 'MySQL'}` : 'Using mock data'}`);
+    });
+    
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+// Start the server
+startServer();
 
 module.exports = app;
