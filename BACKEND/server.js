@@ -9,24 +9,25 @@ const port = process.env.PORT || 9785;
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://119.59.102.61:3000'],
+  credentials: true
+}));
 app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Import routes (use database versions)
-// Routes will be loaded dynamically based on database connection
-
-// Use routes (will be set dynamically)
-// app.use('/api/products', productsRoutes);
-// app.use('/api/users', usersRoutes);
-// app.use('/api/auth', authRoutes);
+// Routes
+app.use('/api/products', require('./routes/products'));
+app.use('/api/users', require('./routes/users'));
+app.use('/api/auth', require('./routes/auth'));
 
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
     message: 'Internet Programming Backend API',
     version: '1.0.0',
+    status: 'running',
     endpoints: {
       products: '/api/products',
       users: '/api/users',
@@ -35,7 +36,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// Health check endpoint
+// Health check
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'OK',
@@ -52,7 +53,7 @@ app.use('*', (req, res) => {
   });
 });
 
-// Error handling middleware
+// Error handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
@@ -61,31 +62,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Database initialization and server start
-const startServer = async () => {
-  try {
-    // Force use mock data mode (database connection disabled)
-    console.log('� Using mock data mode (Database connection disabled)');
-    
-    // Use original mock routes only
-    app.use('/api/products', require('./routes/products'));
-    app.use('/api/users', require('./routes/users'));
-    app.use('/api/auth', require('./routes/auth'));
-    
-    // Start server
-    app.listen(port, () => {
-      console.log(`🚀 Server running at http://localhost:${port}`);
-      console.log(`📖 API Documentation available at http://localhost:${port}`);
-      console.log(`🗄️  Database: Using mock data (DB connection disabled)`);
-    });
-    
-  } catch (error) {
-    console.error('❌ Failed to start server:', error);
-    process.exit(1);
-  }
-};
-
-// Start the server
-startServer();
+// Start server
+app.listen(port, () => {
+  console.log(`🚀 Server running at http://localhost:${port}`);
+  console.log(`📖 API Documentation available at http://localhost:${port}`);
+  console.log(`🗄️  Database: Using mock data`);
+});
 
 module.exports = app;

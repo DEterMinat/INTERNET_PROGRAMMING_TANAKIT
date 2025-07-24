@@ -17,16 +17,11 @@
   "author": "TANAKIT",
   "license": "MIT",
   "dependencies": {
-    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.18.2",
-    "express-validator": "^7.0.1",
     "helmet": "^7.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "morgan": "^1.10.0",
-    "mysql2": "^3.14.2",
-    "sequelize": "^6.37.7"
+    "morgan": "^1.10.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
