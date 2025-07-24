@@ -3,11 +3,11 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "npx expo start",
+    "start": "npx expo start --port 3000",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "npx expo start --android",
-    "ios": "npx expo start --ios",
-    "web": "npx expo start --web",
+    "android": "npx expo start --android --port 3000",
+    "ios": "npx expo start --ios --port 3000",
+    "web": "npx expo start --web --port 3000",
     "lint": "npx expo lint"
   },
   "dependencies": {

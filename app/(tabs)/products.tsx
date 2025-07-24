@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { productsApi } from '../../services/api';
 
 interface Product {
   id: number;
@@ -41,17 +42,11 @@ export default function ProductsScreen() {
     try {
       setIsLoading(true);
       
-      // Fetch products from backend API
-      const response = await fetch('http://localhost:9785/api/products');
+      // Fetch products from backend API using centralized API service
+      const response = await productsApi.getAll();
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      
-      if (result.success && result.data) {
-        setProducts(result.data);
+      if (response.success && response.data) {
+        setProducts(response.data);
       } else {
         throw new Error('Invalid API response format');
       }
