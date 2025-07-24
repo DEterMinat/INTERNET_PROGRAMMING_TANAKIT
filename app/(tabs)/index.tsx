@@ -24,13 +24,15 @@ function ProfileCard() {
       try {
         // Try to load from backend API first
         try {
+          console.log('Attempting to load from API...');
           const response = await usersApi.getPublic(10);
+          console.log('API Response:', response);
           if (response.success && response.data) {
             setProfiles(response.data);
             return;
           }
         } catch (apiError) {
-          console.log('Backend API not available, falling back to remote data');
+          console.log('Backend API not available, falling back to remote data:', apiError);
         }
         
         // Fallback to remote JSON data

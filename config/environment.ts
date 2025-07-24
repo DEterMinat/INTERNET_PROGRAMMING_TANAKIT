@@ -2,12 +2,12 @@
 const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
 
 export const config = {
-  // API Base URLs
+  // API Base URLs - Always use production server
   api: {
-    development: 'http://localhost:9785',
+    development: 'http://119.59.102.61:9785',
     production: 'http://119.59.102.61:9785',
     get baseUrl() {
-      return isDevelopment ? this.development : this.production;
+      return 'http://119.59.102.61:9785';
     }
   },
   
@@ -22,5 +22,5 @@ export const config = {
 
 // Helper function to get API URL
 export const getApiUrl = () => {
-  return config.api.baseUrl;
+  return 'http://119.59.102.61:9785';
 };
