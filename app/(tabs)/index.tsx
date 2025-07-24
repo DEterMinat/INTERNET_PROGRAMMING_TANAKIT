@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { usersApi } from '../../services/api';
 
 
 function ProfileCard() {
@@ -21,6 +22,18 @@ function ProfileCard() {
   useEffect(() => {
     const loadProfiles = async () => {
       try {
+        // Try to load from backend API first
+        try {
+          const response = await usersApi.getAll();
+          if (response.success && response.data) {
+            setProfiles(response.data);
+            return;
+          }
+        } catch (apiError) {
+          console.log('Backend API not available, falling back to remote data');
+        }
+        
+        // Fallback to remote JSON data
         const response = await fetch('https://gist.githubusercontent.com/DEterMinat/0c1ddda2293c7740f623013167f90445/raw/af3737e60967c76fac1c02b7a2efccfa4c7d7dd5/gistfile1.txt');
         const data = await response.json();
         setProfiles(data);

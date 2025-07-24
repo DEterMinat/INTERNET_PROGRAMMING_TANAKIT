@@ -1,37 +1,67 @@
 import React, { useState } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, isLoading } = useAuth();
+  const [formData, setFormData] = useState({
+    login: '', // Can be username or email
+    password: ''
+  });
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-
-    setIsLoading(true);
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false);
-      Alert.alert('Success', 'Login successful!');
-    }, 1500);
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
-  const handleForgotPassword = () => {
-    Alert.alert('Forgot Password', 'Password reset link will be sent to your email');
+  const validateForm = () => {
+    if (!formData.login.trim()) {
+      Alert.alert('Error', 'Username or email is required');
+      return false;
+    }
+    if (!formData.password.trim()) {
+      Alert.alert('Error', 'Password is required');
+      return false;
+    }
+    return true;
+  };
+
+  const handleLogin = async () => {
+    if (!validateForm()) {
+      return;
+    }
+    
+    const result = await login({
+      login: formData.login.trim(),
+      password: formData.password
+    });
+    
+    if (result.success) {
+      Alert.alert('Login Successful', 'Welcome back!');
+      // Reset form
+      setFormData({
+        login: '',
+        password: ''
+      });
+    } else {
+      Alert.alert('Login Failed', result.error || 'Unknown error occurred');
+    }
+  };
+
+  const handleRegisterRedirect = () => {
+    Alert.alert('Navigate to Register', 'This would navigate to register screen');
   };
 
   return (
@@ -53,15 +83,16 @@ export default function LoginScreen() {
 
         <View style={styles.formContainer}>
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Email</Text>
+            <Text style={styles.inputLabel}>Username or Email</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter your email"
+              placeholder="Enter your username or email"
               placeholderTextColor="#9CA3AF"
-              value={email}
-              onChangeText={setEmail}
+              value={formData.login}
+              onChangeText={(text) => handleInputChange('login', text)}
               keyboardType="email-address"
               autoCapitalize="none"
+              autoCorrect={false}
             />
           </View>
 
@@ -71,15 +102,15 @@ export default function LoginScreen() {
               style={styles.input}
               placeholder="Enter your password"
               placeholderTextColor="#9CA3AF"
-              value={password}
-              onChangeText={setPassword}
+              value={formData.password}
+              onChangeText={(text) => handleInputChange('password', text)}
               secureTextEntry
             />
           </View>
 
           <TouchableOpacity 
             style={styles.forgotButton}
-            onPress={handleForgotPassword}
+            onPress={() => Alert.alert('Forgot Password', 'Password reset link will be sent to your email')}
           >
             <Text style={styles.forgotText}>Forgot Password?</Text>
           </TouchableOpacity>
@@ -106,7 +137,7 @@ export default function LoginScreen() {
 
           <View style={styles.signupContainer}>
             <Text style={styles.signupText}>Don&apos;t have an account? </Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={handleRegisterRedirect}>
               <Text style={styles.signupLink}>Sign Up</Text>
             </TouchableOpacity>
           </View>

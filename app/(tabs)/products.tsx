@@ -1,15 +1,15 @@
 import { Image } from 'expo-image';
 import React, { useEffect, useState } from 'react';
 import {
-    Dimensions,
-    FlatList,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  FlatList,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 interface Product {
@@ -37,69 +37,32 @@ export default function ProductsScreen() {
     loadProducts();
   }, []);
 
-  const loadProducts = () => {
-    // Mock products data
-    const mockProducts: Product[] = [
-      {
-        id: 1,
-        name: 'Wireless Headphones',
-        price: 299,
-        image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300',
-        category: 'Electronics',
-        rating: 4.5,
-        description: 'High-quality wireless headphones with noise cancellation',
-      },
-      {
-        id: 2,
-        name: 'Smart Watch',
-        price: 399,
-        image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300',
-        category: 'Electronics',
-        rating: 4.8,
-        description: 'Advanced smartwatch with health monitoring',
-      },
-      {
-        id: 3,
-        name: 'Designer T-Shirt',
-        price: 89,
-        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300',
-        category: 'Fashion',
-        rating: 4.3,
-        description: 'Premium cotton t-shirt with modern design',
-      },
-      {
-        id: 4,
-        name: 'Coffee Maker',
-        price: 199,
-        image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=300',
-        category: 'Home',
-        rating: 4.6,
-        description: 'Automatic coffee maker for perfect brew',
-      },
-      {
-        id: 5,
-        name: 'Running Shoes',
-        price: 159,
-        image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300',
-        category: 'Sports',
-        rating: 4.7,
-        description: 'Comfortable running shoes for daily training',
-      },
-      {
-        id: 6,
-        name: 'Programming Book',
-        price: 49,
-        image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300',
-        category: 'Books',
-        rating: 4.4,
-        description: 'Learn modern programming techniques',
-      },
-    ];
-
-    setTimeout(() => {
-      setProducts(mockProducts);
+  const loadProducts = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Fetch products from backend API
+      const response = await fetch('http://localhost:9785/api/products');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.success && result.data) {
+        setProducts(result.data);
+      } else {
+        throw new Error('Invalid API response format');
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      
+      // Fallback to mock data if API fails
+      setProducts([]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const filteredProducts = products.filter((product) => {
