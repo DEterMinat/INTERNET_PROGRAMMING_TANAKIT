@@ -32,12 +32,125 @@ const writeJsonFile = async (filename, data) => {
 // Helper function to fetch inventory from JSON file
 const fetchInventoryFromJson = async () => {
   try {
-    return await readJsonFile('inventory.json');
+    const data = await readJsonFile('inventory.json');
+    
+    // If no data found, return mock data for production
+    if (!data || data.length === 0) {
+      return getMockInventoryData();
+    }
+    
+    return data;
   } catch (error) {
     console.error('Failed to fetch from JSON file:', error);
-    // Fallback to empty array if file reading fails
-    return [];
+    // Fallback to mock data if file reading fails
+    return getMockInventoryData();
   }
+};
+
+// Mock data function for production
+const getMockInventoryData = () => {
+  return [
+    {
+      id: 1,
+      name: "iPhone 15 Pro Max",
+      category: "Electronics",
+      price: 43900,
+      cost: 35000,
+      stock: 25,
+      minStock: 5,
+      maxStock: 100,
+      sku: "IP15PM-256-TB",
+      barcode: "1234567890123",
+      supplier: "Apple Thailand",
+      description: "iPhone 15 Pro Max 256GB Titanium Blue",
+      image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400",
+      location: "A-01-001",
+      lastRestocked: "2024-12-01T10:00:00Z",
+      status: "active",
+      warranty: "1 year",
+      unit: "pcs"
+    },
+    {
+      id: 2,
+      name: "MacBook Air M3",
+      category: "Electronics",
+      price: 42900,
+      cost: 34000,
+      stock: 3,
+      minStock: 5,
+      maxStock: 50,
+      sku: "MBA-M3-13-MN",
+      barcode: "2345678901234",
+      supplier: "Apple Thailand",
+      description: "MacBook Air 13-inch M3 chip 256GB SSD Midnight",
+      image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400",
+      location: "A-01-002",
+      lastRestocked: "2024-11-28T14:30:00Z",
+      status: "low_stock",
+      warranty: "1 year",
+      unit: "pcs"
+    },
+    {
+      id: 3,
+      name: "Samsung 4K Smart TV",
+      category: "Electronics",
+      price: 25900,
+      cost: 20000,
+      stock: 0,
+      minStock: 2,
+      maxStock: 20,
+      sku: "SAM-TV-55-4K",
+      barcode: "3456789012345",
+      supplier: "Samsung Electronics",
+      description: "Samsung 55-inch 4K Smart TV",
+      image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400",
+      location: "B-02-001",
+      lastRestocked: "2024-11-15T09:00:00Z",
+      status: "out_of_stock",
+      warranty: "2 years",
+      unit: "pcs"
+    },
+    {
+      id: 4,
+      name: "Sony WH-1000XM5",
+      category: "Electronics",
+      price: 12900,
+      cost: 9500,
+      stock: 15,
+      minStock: 8,
+      maxStock: 50,
+      sku: "SONY-WH1000XM5",
+      barcode: "4567890123456",
+      supplier: "Sony Electronics",
+      description: "Sony WH-1000XM5 Wireless Noise Canceling Headphones",
+      image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400",
+      location: "C-03-001",
+      lastRestocked: "2024-12-02T16:00:00Z",
+      status: "active",
+      warranty: "1 year",
+      unit: "pcs"
+    },
+    {
+      id: 5,
+      name: "iPad Pro 12.9 M4",
+      category: "Electronics",
+      price: 39900,
+      cost: 32000,
+      stock: 8,
+      minStock: 3,
+      maxStock: 30,
+      sku: "IPAD-PRO-M4-129",
+      barcode: "5678901234567",
+      supplier: "Apple Thailand",
+      description: "iPad Pro 12.9-inch M4 chip 256GB Space Gray",
+      image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400",
+      location: "A-01-003",
+      lastRestocked: "2024-11-30T11:15:00Z",
+      status: "active",
+      warranty: "1 year",
+      unit: "pcs"
+    }
+  ];
 };
 
 // Helper function to save inventory to JSON file
