@@ -110,44 +110,35 @@ export default function TabLayout() {
       
       {/* Core Business Features - Always Visible */}
       <Tabs.Screen
+        name="index"
+        options={{
+          title: isDesktop ? 'Home' : 'Menu',
+          tabBarIcon: ({ color }) => <IconSymbol size={getIconSize()} name="house.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="dashboard"
         options={{
-          title: isDesktop ? 'Dashboard' : 'Home',
+          title: isDesktop ? 'Dashboard' : 'Analytics',
           tabBarIcon: ({ color }) => <IconSymbol size={getIconSize()} name="chart.bar.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="inventorylist"
         options={{
-          title: isDesktop ? 'Inventory List' : 'Stock',
+          title: isDesktop ? 'Inventory' : 'Stock',
           tabBarIcon: ({ color }) => <IconSymbol size={getIconSize()} name="list.bullet" color={color} />,
         }}
       />
-      <Tabs.Screen
-        name="addedit"
-        options={{
-          title: isDesktop ? 'Add/Edit Item' : 'Add',
-          tabBarIcon: ({ color }) => <IconSymbol size={getIconSize()} name="plus.square.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="stockmovement"
-        options={{
-          title: isDesktop ? 'Stock Movement' : 'Move',
-          tabBarIcon: ({ color }) => <IconSymbol size={getIconSize()} name="arrow.up.arrow.down" color={color} />,
-        }}
-      />
-
-      {/* Secondary Features */}
+      
+      {/* Business Operations */}
       <Tabs.Screen
         name="products"
         options={{
-          title: isDesktop ? 'Product Catalog' : 'Products',
+          title: isDesktop ? 'Products' : 'Items',
           tabBarIcon: ({ color }) => <IconSymbol size={getIconSize()} name="cube.box.fill" color={color} />,
         }}
       />
-
-      {/* User & System */}
       <Tabs.Screen
         name="profile"
         options={{
@@ -156,14 +147,41 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="login"
+        name="explore"
         options={{
-          title: isDesktop ? 'Account' : 'Login',
-          tabBarIcon: ({ color }) => <IconSymbol size={getIconSize()} name="person.circle" color={color} />,
+          title: isDesktop ? 'More' : 'Menu',
+          tabBarIcon: ({ color }) => <IconSymbol size={getIconSize()} name="ellipsis.circle.fill" color={color} />,
         }}
       />
 
-      {/* Additional Features - Desktop Only */}
+      {/* Extended Features - Tablet & Desktop */}
+      {!isMobile && (
+        <>
+          <Tabs.Screen
+            name="addedit"
+            options={{
+              title: isDesktop ? 'Add/Edit' : 'Add',
+              tabBarIcon: ({ color }) => <IconSymbol size={getIconSize()} name="plus.square.fill" color={color} />,
+            }}
+          />
+          <Tabs.Screen
+            name="stockmovement"
+            options={{
+              title: isDesktop ? 'Stock Movement' : 'Movement',
+              tabBarIcon: ({ color }) => <IconSymbol size={getIconSize()} name="arrow.up.arrow.down" color={color} />,
+            }}
+          />
+          <Tabs.Screen
+            name="login"
+            options={{
+              title: isDesktop ? 'Account' : 'Login',
+              tabBarIcon: ({ color }) => <IconSymbol size={getIconSize()} name="person.circle" color={color} />,
+            }}
+          />
+        </>
+      )}
+
+      {/* Desktop Only Features */}
       {isDesktop && (
         <>
           <Tabs.Screen
@@ -189,22 +207,6 @@ export default function TabLayout() {
           />
         </>
       )}
-
-      {/* Navigation */}
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: isDesktop ? 'Team' : 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={getIconSize()} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'More',
-          tabBarIcon: ({ color }) => <IconSymbol size={getIconSize()} name="paperplane.fill" color={color} />,
-        }}
-      />
 
     </Tabs>
   );
