@@ -1,3 +1,4 @@
+import { apiConfig } from '@/config/environment';
 import { Image } from 'expo-image';
 import React, { useEffect, useState } from 'react';
 import {
@@ -52,7 +53,7 @@ interface InventoryStats {
 const fetchInventoryFromAPI = async (): Promise<InventoryItem[]> => {
   try {
     // Try cloud API first
-    const response = await fetch('http://localhost:9785/api/inventory');
+    const response = await fetch(`${apiConfig.baseUrls.production}${apiConfig.endpoints.inventory.list}`);
     if (response.ok) {
       const data = await response.json();
       return data.success ? data.data : [];
@@ -63,7 +64,7 @@ const fetchInventoryFromAPI = async (): Promise<InventoryItem[]> => {
   
   try {
     // Fallback to direct JSON
-    const response = await fetch('http://localhost:9785/inventory_products.json');
+    const response = await fetch(`${apiConfig.baseUrls.production}/inventory_products.json`);
     if (response.ok) {
       return await response.json();
     }
@@ -97,7 +98,7 @@ const fetchInventoryFromAPI = async (): Promise<InventoryItem[]> => {
 
 const fetchInventoryStats = async (): Promise<InventoryStats | null> => {
   try {
-    const response = await fetch('http://localhost:9785/api/inventory/stats');
+    const response = await fetch(`${apiConfig.baseUrls.production}${apiConfig.endpoints.inventory.stats}`);
     if (response.ok) {
       const data = await response.json();
       return data.success ? data.data : null;

@@ -13,10 +13,12 @@ app.use(cors({
   origin: [
     'http://localhost:3000', 
     'http://localhost:30019',
+    'http://localhost:8081',
     'http://119.59.102.61:3000',
     'https://nindam.sytes.net',
-    'http://localhost:8081'
-  ],
+    'https://nindam.sytes.net:8081',
+    process.env.CORS_ORIGIN
+  ].filter(Boolean), // Remove any undefined values
   credentials: true
 }));
 app.use(morgan('combined'));

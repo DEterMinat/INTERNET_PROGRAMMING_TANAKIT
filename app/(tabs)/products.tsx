@@ -1,3 +1,4 @@
+import { apiConfig } from '@/config/environment';
 import { Image } from 'expo-image';
 import React, { useEffect, useState } from 'react';
 import {
@@ -56,7 +57,7 @@ export default function ProductsScreen() {
       // Fallback to JSON endpoint if regular API fails
       try {
         console.log('Trying JSON endpoint fallback...');
-        const jsonResponse = await fetch('http://localhost:9785/json/products.json');
+        const jsonResponse = await fetch(`${apiConfig.baseUrls.production}/json/products.json`);
         const jsonData = await jsonResponse.json();
         if (Array.isArray(jsonData)) {
           setProducts(jsonData);

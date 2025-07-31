@@ -1,3 +1,4 @@
+import { apiConfig } from '@/config/environment';
 import { Image } from 'expo-image';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -46,7 +47,7 @@ interface FilterOptions {
 // API functions
 const fetchInventoryFromAPI = async (): Promise<InventoryItem[]> => {
   try {
-    const response = await fetch('http://localhost:9785/api/inventory');
+    const response = await fetch(`${apiConfig.baseUrls.production}${apiConfig.endpoints.inventory.list}`);
     if (response.ok) {
       const result = await response.json();
       // Return only the data array from the API response

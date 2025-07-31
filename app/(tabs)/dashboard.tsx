@@ -1,7 +1,7 @@
+import { apiConfig } from '@/config/environment';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
     Alert,
-    Dimensions,
     FlatList,
     RefreshControl,
     SafeAreaView,
@@ -77,9 +77,12 @@ const fetchDashboardData = async (): Promise<{
   alerts: StockAlert[];
 }> => {
   try {
-    const response = await fetch('http://localhost:9785/api/inventory');
+    const inventoryUrl = apiConfig.buildUrl('inventory', 'list');
+    const response = await fetch(inventoryUrl);
     if (response.ok) {
-      const data = await response.json();
+      const result = await response.json();
+      // Extract data array from API response
+      const data = result.success && Array.isArray(result.data) ? result.data : [];
       
       // Generate mock trends data
       const trends = generateMockTrends();
@@ -188,8 +191,6 @@ export default function DashboardScreen() {
   const [alerts, setAlerts] = useState<StockAlert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
-  const screenWidth = Dimensions.get('window').width;
 
   const loadDashboardData = useCallback(async () => {
     try {
