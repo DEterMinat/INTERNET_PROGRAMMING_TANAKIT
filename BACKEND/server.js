@@ -15,8 +15,8 @@ app.use(cors({
     'http://localhost:30019',
     'http://localhost:8081',
     'http://119.59.102.61:3000',
-    'https://nindam.sytes.net',
-    'https://nindam.sytes.net:8081',
+    'http://nindam.sytes.net',
+    'http://nindam.sytes.net:8081',
     process.env.CORS_ORIGIN
   ].filter(Boolean), // Remove any undefined values
   credentials: true

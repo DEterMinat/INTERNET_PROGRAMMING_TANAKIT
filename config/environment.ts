@@ -29,8 +29,8 @@ export const apiConfig: ApiConfig = {
   // Base URLs สำหรับแต่ละ Environment
   baseUrls: {
     development: 'http://localhost:9785',
-    staging: 'https://nindam.sytes.net:9785', 
-    production: 'https://nindam.sytes.net:9785'
+    staging: 'http://nindam.sytes.net:9785', 
+    production: 'http://nindam.sytes.net:9785'
   },
   
   // API Endpoints - สามารถเปลี่ยนได้ง่าย
@@ -143,5 +143,5 @@ export const config = {
 
 // Helper function to get API URL
 export const getApiUrl = () => {
-  return 'https://nindam.sytes.net:9785';
+  return 'http://nindam.sytes.net:9785';
 };
