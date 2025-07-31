@@ -17,6 +17,7 @@ app.use(cors({
     'http://119.59.102.61:3000',
     'http://nindam.sytes.net',
     'http://nindam.sytes.net:8081',
+    'http://nindam.sytes.net:30019',
     process.env.CORS_ORIGIN
   ].filter(Boolean), // Remove any undefined values
   credentials: true
