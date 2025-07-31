@@ -12,7 +12,6 @@ app.use(helmet());
 app.use(cors({
   origin: [
     'http://localhost:3000', 
-    'http://localhost:30019',
     'http://119.59.102.61:3000',
     'https://nindam.sytes.net',
     'http://localhost:8081'
@@ -28,8 +27,6 @@ app.use('/api/products', require('./routes/products'));
 app.use('/api/inventory', require('./routes/inventory'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/dashboard', require('./routes/dashboard'));
-app.use('/json', require('./routes/json'));
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -38,22 +35,10 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     status: 'running',
     endpoints: {
-      api: {
-        products: '/api/products',
-        inventory: '/api/inventory',
-        users: '/api/users',
-        auth: '/api/auth',
-        dashboard: '/api/dashboard'
-      },
-      json: {
-        products: '/json/products.json',
-        inventory: '/json/inventory.json', 
-        categories: '/json/categories.json',
-        dashboard: '/json/dashboard.json',
-        mockData: '/json/mock-data.json'
-      }
-    },
-    documentation: 'Visit /api-docs for detailed API documentation'
+      products: '/api/products',
+      users: '/api/users',
+      auth: '/api/auth'
+    }
   });
 });
 

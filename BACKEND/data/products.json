@@ -1,0 +1,98 @@
+[
+  {
+    "id": 1,
+    "name": "Wireless Headphones",
+    "price": 299,
+    "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300",
+    "category": "Electronics",
+    "rating": 4.5,
+    "description": "High-quality wireless headphones with noise cancellation",
+    "stock": 12,
+    "brand": "AudioTech",
+    "featured": true
+  },
+  {
+    "id": 2,
+    "name": "Smart Watch",
+    "price": 399,
+    "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300",
+    "category": "Electronics",
+    "rating": 4.8,
+    "description": "Advanced smartwatch with health monitoring",
+    "stock": 8,
+    "brand": "TechWear",
+    "featured": true
+  },
+  {
+    "id": 3,
+    "name": "iPhone 15 Pro",
+    "price": 999,
+    "image": "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=300",
+    "category": "Electronics",
+    "rating": 4.9,
+    "description": "Latest iPhone with titanium design and A17 Pro chip",
+    "stock": 5,
+    "brand": "Apple",
+    "featured": true
+  },
+  {
+    "id": 4,
+    "name": "Laptop Bag",
+    "price": 89,
+    "image": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300",
+    "category": "Accessories",
+    "rating": 4.2,
+    "description": "Durable laptop bag with multiple compartments",
+    "stock": 25,
+    "brand": "CarryOn",
+    "featured": false
+  },
+  {
+    "id": 5,
+    "name": "Gaming Mouse",
+    "price": 79,
+    "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=300",
+    "category": "Electronics",
+    "rating": 4.6,
+    "description": "High-precision gaming mouse with RGB lighting",
+    "stock": 18,
+    "brand": "GamePro",
+    "featured": false
+  },
+  {
+    "id": 6,
+    "name": "Bluetooth Speaker",
+    "price": 159,
+    "image": "https://images.unsplash.com/photo-1545454675-3531b543be5d?w=300",
+    "category": "Electronics",
+    "rating": 4.4,
+    "description": "Portable waterproof bluetooth speaker with powerful bass",
+    "stock": 14,
+    "brand": "SoundWave",
+    "featured": true
+  },
+  {
+    "id": 7,
+    "name": "Tablet Stand",
+    "price": 45,
+    "image": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=300",
+    "category": "Accessories",
+    "rating": 4.1,
+    "description": "Adjustable aluminum tablet stand for any device",
+    "stock": 32,
+    "brand": "TechStand",
+    "featured": false
+  },
+  {
+    "id": 8,
+    "name": "Wireless Charger",
+    "price": 35,
+    "image": "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=300",
+    "category": "Electronics",
+    "rating": 4.3,
+    "description": "Fast wireless charging pad for smartphones",
+    "stock": 28,
+    "brand": "ChargeFast",
+    "featured": false
+  }
+]

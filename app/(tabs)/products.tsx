@@ -45,7 +45,7 @@ export default function ProductsScreen() {
       // Fetch products from backend API using centralized API service
       const response = await productsApi.getAll();
       
-      if (response.success && response.data) {
+      if (response.success && response.data && Array.isArray(response.data)) {
         setProducts(response.data);
       } else {
         throw new Error('Invalid API response format');
@@ -53,8 +53,20 @@ export default function ProductsScreen() {
     } catch (error) {
       console.error('Error fetching products:', error);
       
-      // Fallback to mock data if API fails
-      setProducts([]);
+      // Fallback to JSON endpoint if regular API fails
+      try {
+        console.log('Trying JSON endpoint fallback...');
+        const jsonResponse = await fetch('http://localhost:9785/json/products.json');
+        const jsonData = await jsonResponse.json();
+        if (Array.isArray(jsonData)) {
+          setProducts(jsonData);
+        } else {
+          setProducts([]);
+        }
+      } catch (jsonError) {
+        console.error('JSON endpoint also failed:', jsonError);
+        setProducts([]);
+      }
     } finally {
       setIsLoading(false);
     }

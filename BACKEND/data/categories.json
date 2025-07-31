@@ -1,0 +1,10 @@
+[
+  { "id": 1, "name": "Electronics", "count": 156, "icon": "📱" },
+  { "id": 2, "name": "Computers", "count": 89, "icon": "💻" },
+  { "id": 3, "name": "Tablets", "count": 45, "icon": "📱" },
+  { "id": 4, "name": "Audio", "count": 67, "icon": "🎧" },
+  { "id": 5, "name": "Wearables", "count": 34, "icon": "⌚" },
+  { "id": 6, "name": "Gaming", "count": 78, "icon": "🎮" },
+  { "id": 7, "name": "Cameras", "count": 23, "icon": "📷" },
+  { "id": 8, "name": "Accessories", "count": 145, "icon": "🔌" }
+]

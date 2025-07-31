@@ -27,8 +27,17 @@ function ProfileCard() {
           console.log('Attempting to load from API...');
           const response = await usersApi.getPublic(10);
           console.log('API Response:', response);
-          if (response.success && response.data) {
-            setProfiles(response.data);
+          if (response.success && response.data && Array.isArray(response.data)) {
+            // Map the API response to match expected profile format
+            const mappedProfiles = response.data.map((user: any) => ({
+              id: user.id,
+              name: `${user.firstName} ${user.lastName}`,
+              title: user.role || 'Member',
+              image: user.avatar,
+              username: user.username,
+              createdAt: user.createdAt
+            }));
+            setProfiles(mappedProfiles);
             return;
           }
         } catch (apiError) {

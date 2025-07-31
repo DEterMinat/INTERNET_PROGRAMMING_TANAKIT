@@ -1,13 +1,17 @@
-import { Image } from 'expo-image';
 import React from 'react';
 import {
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
+const isTablet = width >= 768;
+const isLandscape = width > height;
 
 interface MenuItem {
   id: string;
@@ -37,8 +41,8 @@ export default function MenuNavigator({ onNavigate }: MenuNavigatorProps) {
       id: '2',
       title: 'Designers',
       subtitle: 'Browse Designer Profiles',
-      icon: 'https://static.vecteezy.com/system/resources/previews/000/550/731/original/user-icon-vector.jpg',
-      iconType: 'url',
+      icon: '👥',
+      iconType: 'emoji',
       color: '#4ECDC4',
       route: 'designers',
     },
@@ -46,8 +50,8 @@ export default function MenuNavigator({ onNavigate }: MenuNavigatorProps) {
       id: '3',
       title: 'Login System',
       subtitle: 'User Authentication',
-      icon: 'https://th.bing.com/th/id/OIP.VDv2X_HrVRH3zxy6wjuG9wHaHa?w=181&h=181&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3',
-      iconType: 'url',
+      icon: '🔐',
+      iconType: 'emoji',
       color: '#45B7D1',
       route: 'login',
     },
@@ -55,8 +59,8 @@ export default function MenuNavigator({ onNavigate }: MenuNavigatorProps) {
       id: '4',
       title: 'Products',
       subtitle: 'Show Products Catalog',
-      icon: 'https://tse4.mm.bing.net/th/id/OIP.vPR0IyfGd-7m70OAqGuuKwHaHa?rs=1&pid=ImgDetMain&o=7&rm=3',
-      iconType: 'url',
+      icon: '🛍️',
+      iconType: 'emoji',
       color: '#96CEB4',
       route: 'products',
     },
@@ -76,6 +80,24 @@ export default function MenuNavigator({ onNavigate }: MenuNavigatorProps) {
       iconType: 'emoji',
       color: '#DDA0DD',
     },
+    {
+      id: '7',
+      title: 'Dashboard',
+      subtitle: 'Analytics & Overview',
+      icon: '📊',
+      iconType: 'emoji',
+      color: '#FF8A80',
+      route: 'dashboard',
+    },
+    {
+      id: '8',
+      title: 'Inventory',
+      subtitle: 'Stock Management',
+      icon: '📦',
+      iconType: 'emoji',
+      color: '#90CAF9',
+      route: 'inventorylist',
+    },
   ];
 
   const handleItemPress = (item: MenuItem) => {
@@ -84,31 +106,45 @@ export default function MenuNavigator({ onNavigate }: MenuNavigatorProps) {
     }
   };
 
+  const getColumns = () => {
+    if (isTablet) {
+      return isLandscape ? 4 : 3;
+    }
+    return isLandscape ? 3 : 2;
+  };
+
   const renderMenuItem = (item: MenuItem) => (
     <TouchableOpacity
       key={item.id}
-      style={[styles.menuItem, { backgroundColor: item.color }]}
+      style={[
+        styles.menuItem, 
+        { 
+          backgroundColor: item.color,
+          width: isTablet 
+            ? (width - 48 - (getColumns() - 1) * 16) / getColumns()
+            : (width - 48 - (getColumns() - 1) * 16) / getColumns()
+        }
+      ]}
       onPress={() => handleItemPress(item)}
       activeOpacity={0.8}
     >
       <View style={styles.menuContent}>
         <View style={styles.menuHeader}>
-          {item.iconType === 'url' ? (
-            <Image 
-              source={{ uri: item.icon }} 
-              style={styles.menuIconImage}
-            />
-          ) : (
-            <Text style={styles.menuIcon}>{item.icon}</Text>
-          )}
+          <Text style={styles.menuIcon}>{item.icon}</Text>
           <View style={styles.menuBadge}>
             <Text style={styles.menuBadgeText}>NEW</Text>
           </View>
         </View>
-        <Text style={styles.menuTitle}>{item.title}</Text>
-        <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
+        <Text style={[styles.menuTitle, { fontSize: isTablet ? 18 : 16 }]}>
+          {item.title}
+        </Text>
+        <Text style={[styles.menuSubtitle, { fontSize: isTablet ? 14 : 12 }]}>
+          {item.subtitle}
+        </Text>
         <View style={styles.menuFooter}>
-          <Text style={styles.learnMore}>Learn More →</Text>
+          <Text style={[styles.learnMore, { fontSize: isTablet ? 14 : 12 }]}>
+            Learn More →
+          </Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -117,25 +153,54 @@ export default function MenuNavigator({ onNavigate }: MenuNavigatorProps) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>React UI & Navigation</Text>
-        <Text style={styles.headerSubtitle}>Study Menu Navigator</Text>
+        <Text style={[styles.headerTitle, { fontSize: isTablet ? 32 : 28 }]}>
+          React UI & Navigation
+        </Text>
+        <Text style={[styles.headerSubtitle, { fontSize: isTablet ? 18 : 16 }]}>
+          Study Menu Navigator
+        </Text>
       </View>
 
       <ScrollView 
         style={styles.scrollContainer}
-        contentContainerStyle={styles.menuContainer}
+        contentContainerStyle={[
+          styles.menuContainer,
+          { paddingHorizontal: isTablet ? 32 : 24 }
+        ]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.sectionTitle}>Topics Outline</Text>
+        <Text style={[styles.sectionTitle, { fontSize: isTablet ? 24 : 20 }]}>
+          Topics Outline
+        </Text>
         
-        <View style={styles.menuGrid}>
+        <View style={[
+          styles.menuGrid,
+          {
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
+            gap: 16,
+          }
+        ]}>
           {menuItems.map(renderMenuItem)}
         </View>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
+        <View style={[styles.footer, { marginTop: isTablet ? 60 : 40 }]}>
+          <Text style={[styles.footerText, { fontSize: isTablet ? 16 : 14 }]}>
             Explore modern React Native UI patterns and navigation techniques
           </Text>
+          
+          {/* Additional info for tablets */}
+          {isTablet && (
+            <View style={styles.tabletInfo}>
+              <Text style={styles.tabletInfoText}>
+                💡 Tip: This interface is optimized for both mobile and tablet views
+              </Text>
+              <Text style={styles.tabletInfoText}>
+                📱 Current view: {isLandscape ? 'Landscape' : 'Portrait'} • {getColumns()} columns
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -156,13 +221,11 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E9ECEF',
   },
   headerTitle: {
-    fontSize: 28,
     fontWeight: 'bold',
     color: '#212529',
     marginBottom: 4,
   },
   headerSubtitle: {
-    fontSize: 16,
     color: '#6C757D',
     fontWeight: '500',
   },
@@ -170,11 +233,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   menuContainer: {
-    paddingHorizontal: 24,
     paddingVertical: 20,
   },
   sectionTitle: {
-    fontSize: 20,
     fontWeight: 'bold',
     color: '#495057',
     marginBottom: 20,
@@ -193,7 +254,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   menuContent: {
-    minHeight: 120,
+    minHeight: isTablet ? 140 : 120,
   },
   menuHeader: {
     flexDirection: 'row',
@@ -202,13 +263,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   menuIcon: {
-    fontSize: 32,
-  },
-  menuIconImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    fontSize: isTablet ? 36 : 32,
   },
   menuBadge: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -222,13 +277,11 @@ const styles = StyleSheet.create({
     color: '#495057',
   },
   menuTitle: {
-    fontSize: 20,
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginBottom: 6,
   },
   menuSubtitle: {
-    fontSize: 14,
     color: 'rgba(255, 255, 255, 0.9)',
     marginBottom: 16,
     lineHeight: 20,
@@ -238,22 +291,32 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   learnMore: {
-    fontSize: 14,
     color: '#FFFFFF',
     fontWeight: '600',
     opacity: 0.9,
   },
   footer: {
-    marginTop: 40,
     padding: 20,
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     alignItems: 'center',
   },
   footerText: {
-    fontSize: 14,
     color: '#6C757D',
     textAlign: 'center',
     lineHeight: 20,
+  },
+  tabletInfo: {
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  tabletInfoText: {
+    fontSize: 12,
+    color: '#6C757D',
+    textAlign: 'center',
+    marginVertical: 2,
   },
 });

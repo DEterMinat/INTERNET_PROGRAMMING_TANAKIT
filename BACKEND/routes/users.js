@@ -1,5 +1,30 @@
 const express = require('express');
 const router = express.Router();
+const fs = require('fs').promises;
+const path = require('path');
+
+// Helper function to read JSON files
+const readJsonFile = async (filename) => {
+  try {
+    const filePath = path.join(process.cwd(), 'BACKEND', 'data', filename);
+    const data = await fs.readFile(filePath, 'utf8');
+    const json = JSON.parse(data);
+    return json;
+  } catch (error) {
+    console.error(`Error reading ${filename}:`, error.message);
+    return [];
+  }
+};
+
+// Helper function to get users from JSON file
+const getUsersFromJson = async () => {
+  try {
+    return await readJsonFile('users.json');
+  } catch (error) {
+    console.error('Failed to fetch users from JSON file:', error);
+    return [];
+  }
+};
 
 // Mock users data
 const mockUsers = [
@@ -106,12 +131,13 @@ const mockUsers = [
 ];
 
 // GET /api/users/public - Get public users with query params
-router.get('/public', (req, res) => {
+router.get('/public', async (req, res) => {
   try {
     let count = parseInt(req.query.limit) || 10;
     count = Math.min(count, 50); // Max 50 users
     
-    const publicUsers = mockUsers
+    const allUsers = await getUsersFromJson();
+    const publicUsers = allUsers
       .filter(user => user.isActive)
       .slice(0, count)
       .map(user => ({
@@ -128,7 +154,7 @@ router.get('/public', (req, res) => {
       success: true,
       data: publicUsers,
       count: publicUsers.length,
-      total: mockUsers.filter(user => user.isActive).length
+      total: allUsers.filter(user => user.isActive).length
     });
   } catch (error) {
     res.status(500).json({

@@ -1,0 +1,163 @@
+{
+  "overview": {
+    "totalRevenue": 2450000,
+    "totalOrders": 1580,
+    "totalProducts": 637,
+    "totalCustomers": 2890,
+    "monthlyGrowth": 12.5,
+    "weeklyGrowth": 3.2,
+    "dailyGrowth": 0.8
+  },
+  "inventory": {
+    "totalItems": 10,
+    "totalValue": 3571000,
+    "lowStockItems": 1,
+    "outOfStockItems": 0,
+    "categoriesCount": 7
+  },
+  "recentActivity": [
+    {
+      "id": 1,
+      "type": "sale",
+      "description": "ขาย iPhone 15 Pro Max ให้ นายสมชาย ใจดี",
+      "amount": 43900,
+      "timestamp": "2024-12-03T10:30:00Z"
+    },
+    {
+      "id": 2,
+      "type": "restock",
+      "description": "เติมสต็อก MacBook Air M3 จำนวน 5 เครื่อง",
+      "amount": null,
+      "timestamp": "2024-12-03T09:15:00Z"
+    },
+    {
+      "id": 3,
+      "type": "sale",
+      "description": "ขาย Samsung Galaxy S24 Ultra ให้ นางสาวใจ ดี",
+      "amount": 44900,
+      "timestamp": "2024-12-03T08:45:00Z"
+    }
+  ],
+  "sales": {
+    "today": {
+      "sales": 156000,
+      "orders": 12,
+      "averageOrder": 13000,
+      "conversion": 3.2
+    },
+    "thisWeek": {
+      "sales": 890000,
+      "orders": 67,
+      "averageOrder": 13283,
+      "conversion": 3.8
+    },
+    "thisMonth": {
+      "sales": 2450000,
+      "orders": 189,
+      "averageOrder": 12963,
+      "conversion": 4.1
+    },
+    "chartData": [
+      { "date": "2024-11-27", "sales": 125000, "orders": 9 },
+      { "date": "2024-11-28", "sales": 143000, "orders": 11 },
+      { "date": "2024-11-29", "sales": 167000, "orders": 13 },
+      { "date": "2024-11-30", "sales": 134000, "orders": 10 },
+      { "date": "2024-12-01", "sales": 178000, "orders": 14 },
+      { "date": "2024-12-02", "sales": 143000, "orders": 11 },
+      { "date": "2024-12-03", "sales": 156000, "orders": 12 }
+    ],
+    "topProducts": [
+      { 
+        "id": 1, 
+        "name": "iPhone 15 Pro Max", 
+        "sales": 15, 
+        "revenue": 658500,
+        "growth": 12.5
+      },
+      { 
+        "id": 2, 
+        "name": "MacBook Air M3", 
+        "sales": 8, 
+        "revenue": 343200,
+        "growth": 8.3
+      },
+      { 
+        "id": 3, 
+        "name": "Samsung Galaxy S24 Ultra", 
+        "sales": 6, 
+        "revenue": 269400,
+        "growth": 15.7
+      }
+    ]
+  },
+  "analytics": {
+    "traffic": {
+      "totalVisitors": 12450,
+      "uniqueVisitors": 8970,
+      "pageViews": 45620,
+      "bounceRate": 32.5,
+      "avgSessionDuration": "4:32"
+    },
+    "demographics": {
+      "ageGroups": [
+        { "range": "18-24", "percentage": 25, "count": 2243 },
+        { "range": "25-34", "percentage": 35, "count": 3140 },
+        { "range": "35-44", "percentage": 25, "count": 2243 },
+        { "range": "45-54", "percentage": 10, "count": 897 },
+        { "range": "55+", "percentage": 5, "count": 447 }
+      ],
+      "locations": [
+        { "city": "Bangkok", "percentage": 45, "count": 4037 },
+        { "city": "Chiang Mai", "percentage": 15, "count": 1346 },
+        { "city": "Phuket", "percentage": 12, "count": 1076 },
+        { "city": "Pattaya", "percentage": 8, "count": 718 },
+        { "city": "Other", "percentage": 20, "count": 1793 }
+      ]
+    },
+    "performance": {
+      "conversionRate": 4.2,
+      "avgOrderValue": 12963,
+      "customerLifetimeValue": 45600,
+      "returnCustomerRate": 68.5
+    }
+  },
+  "reports": {
+    "inventory": {
+      "mostSold": [
+        { "product": "iPhone 15 Pro Max", "quantity": 150, "revenue": 6585000 },
+        { "product": "MacBook Air M3", "quantity": 89, "revenue": 3818100 },
+        { "product": "Samsung Galaxy S24 Ultra", "quantity": 67, "revenue": 3008300 }
+      ],
+      "leastSold": [
+        { "product": "Canon EOS R6 Mark II", "quantity": 5, "revenue": 379500 },
+        { "product": "Nintendo Switch OLED", "quantity": 8, "revenue": 100000 },
+        { "product": "Dell XPS 13", "quantity": 12, "revenue": 466800 }
+      ],
+      "profitability": [
+        { "product": "AirPods Pro (3rd Gen)", "margin": 26.97, "profit": 120000 },
+        { "product": "Sony WH-1000XM5", "margin": 26.36, "profit": 85000 },
+        { "product": "Apple Watch Series 9", "margin": 24.46, "profit": 102000 }
+      ]
+    },
+    "financial": {
+      "revenue": {
+        "total": 2450000,
+        "growth": 12.5,
+        "forecast": 2850000
+      },
+      "profit": {
+        "total": 567000,
+        "margin": 23.1,
+        "growth": 8.9
+      },
+      "expenses": {
+        "total": 1883000,
+        "breakdown": {
+          "inventory": 1650000,
+          "operations": 145000,
+          "marketing": 88000
+        }
+      }
+    }
+  }
+}
