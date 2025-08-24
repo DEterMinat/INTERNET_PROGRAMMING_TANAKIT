@@ -12,7 +12,7 @@ import {
   RefreshControl,
   Modal
 } from 'react-native';
-import AppLayout from '../../components/AppLayout';
+import SidebarLayout from '../../components/SidebarLayout';
 import { LinearGradient } from 'expo-linear-gradient';
 
 interface Product {
@@ -210,17 +210,17 @@ export default function Products() {
 
   if (loading) {
     return (
-      <AppLayout>
+      <SidebarLayout>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#3B82F6" />
           <Text style={styles.loadingText}>กำลังโหลดข้อมูลสินค้า...</Text>
         </View>
-      </AppLayout>
+      </SidebarLayout>
     );
   }
 
   return (
-    <AppLayout>
+    <SidebarLayout>
       <ScrollView 
         style={styles.container} 
         showsVerticalScrollIndicator={false}
@@ -480,7 +480,7 @@ export default function Products() {
         {/* Bottom Spacing */}
         <View style={styles.bottomSpacing} />
       </ScrollView>
-    </AppLayout>
+    </SidebarLayout>
   );
 }
 
