@@ -1,9 +1,9 @@
+import AppLayout from '@/components/AppLayout';
 import { Image } from 'expo-image';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Dimensions,
     FlatList,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,
@@ -107,7 +107,7 @@ export default function ProductsScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <AppLayout>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
@@ -166,7 +166,7 @@ export default function ProductsScreen() {
           />
         )}
       </View>
-    </SafeAreaView>
+    </AppLayout>
   );
 }
 
