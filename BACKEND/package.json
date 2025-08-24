@@ -6,11 +6,12 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "production": "NODE_ENV=production node server.js",
+    "server": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "test-db": "node test-database.js",
     "db:test": "node test-database.js",
-    "quick-start": "node server.js",
-    "production": "NODE_ENV=production node server.js"
+    "quick-start": "node server.js"
   },
   "keywords": [
     "express",

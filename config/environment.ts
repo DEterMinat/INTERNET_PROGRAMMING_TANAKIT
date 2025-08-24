@@ -32,15 +32,15 @@ interface ApiConfig {
 export const apiConfig: ApiConfig = {
   // Base URLs สำหรับแต่ละ Environment
   baseUrls: {
-    development: 'http://localhost:9785',
-    staging: 'http://nindam.sytes.net:9785', 
-    production: 'http://nindam.sytes.net:9785'
+    development: 'http://119.59.102.61:9785',
+    staging: 'http://119.59.102.61:9785', 
+    production: 'http://119.59.102.61:9785'
   },
   
   // Fallback URLs สำหรับกรณี primary server ไม่พร้อม
   fallbackUrls: {
-    development: ['http://localhost:3001', 'http://127.0.0.1:9785'],
-    production: ['http://localhost:9785', 'http://127.0.0.1:9785']
+    development: ['http://localhost:9785', 'http://127.0.0.1:9785'],
+    production: ['http://localhost:9785', 'http://nindam.sytes.net:9785']
   },
   
   // API Endpoints - สามารถเปลี่ยนได้ง่าย

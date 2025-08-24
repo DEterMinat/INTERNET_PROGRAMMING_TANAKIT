@@ -49,6 +49,8 @@ app.use(cors({
     'http://localhost:30019',
     'http://localhost:8081',
     'http://119.59.102.61:3000',
+    'http://119.59.102.61:30019',
+    'http://119.59.102.61:8081',
     'http://nindam.sytes.net',
     'http://nindam.sytes.net:8081',
     'http://nindam.sytes.net:30019',
@@ -137,10 +139,13 @@ const startServer = async () => {
     // Initialize database connection
     const dbConnected = await initDatabase();
     
-    // Start Express server
-    app.listen(port, () => {
-      console.log(`🚀 Server running at http://localhost:${port}`);
-      console.log(`📖 API Documentation available at http://localhost:${port}`);
+    // Start Express server with specific IP binding
+    app.listen(port, '0.0.0.0', () => {
+      console.log(`🚀 Server running at http://119.59.102.61:${port}`);
+      console.log(`📖 API Documentation available at http://119.59.102.61:${port}`);
+      console.log(`🔗 Example API: http://119.59.102.61:${port}/api/inventory`);
+      console.log(`🔗 Products API: http://119.59.102.61:${port}/api/db-products`);
+      console.log(`🔗 Health Check: http://119.59.102.61:${port}/health`);
       console.log(`🗄️  Database: ${dbConnected ? 'MySQL Connected' : 'MySQL Connection Failed'}`);
       
       if (!dbConnected) {
