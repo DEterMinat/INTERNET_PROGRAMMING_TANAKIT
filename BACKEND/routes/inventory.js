@@ -1,164 +1,46 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs').promises;
-const path = require('path');
+const { executeQuery } = require('../config/database');
 
-// Helper function to read JSON files
-const readJsonFile = async (filename) => {
+// Helper function to fetch inventory from database
+const fetchInventoryFromDB = async () => {
   try {
-    // Use absolute path to data directory
-    const filePath = path.join(process.cwd(), 'BACKEND', 'data', filename);
-    const data = await fs.readFile(filePath, 'utf8');
-    const json = JSON.parse(data);
-    return json;
-  } catch (error) {
-    console.error(`Error reading ${filename}:`, error.message);
-    return [];
-  }
-};
-
-// Helper function to write JSON files
-const writeJsonFile = async (filename, data) => {
-  try {
-    const filePath = path.join(process.cwd(), 'BACKEND', 'data', filename);
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
-    return true;
-  } catch (error) {
-    console.error(`Error writing ${filename}:`, error);
-    throw error;
-  }
-};
-
-// Helper function to fetch inventory from JSON file
-const fetchInventoryFromJson = async () => {
-  try {
-    const data = await readJsonFile('inventory.json');
+    const query = `
+      SELECT 
+        p.id,
+        p.name,
+        p.category,
+        p.price,
+        ROUND(p.price * 0.8, 2) as cost,
+        p.stock,
+        5 as minStock,
+        100 as maxStock,
+        CONCAT(UPPER(LEFT(p.name, 3)), '-', p.id) as sku,
+        CONCAT('123456789012', p.id) as barcode,
+        p.brand as supplier,
+        p.description,
+        p.image,
+        CONCAT('A-', LPAD(FLOOR((p.id-1)/10)+1, 2, '0'), '-', LPAD(((p.id-1)%10)+1, 3, '0')) as location,
+        DATE_FORMAT(p.created_at, '%Y-%m-%dT%H:%i:%sZ') as lastRestocked,
+        CASE WHEN p.isActive = 1 THEN 'active' ELSE 'inactive' END as status,
+        '1 year' as warranty,
+        ROUND(p.price * 0.2, 2) as profit,
+        '20.00' as profitMargin,
+        CASE 
+          WHEN p.stock <= 5 THEN 'low'
+          WHEN p.stock <= 10 THEN 'medium'
+          ELSE 'normal'
+        END as stockStatus,
+        ROUND(p.price * p.stock, 2) as totalValue
+      FROM products p
+      WHERE p.isActive = 1
+      ORDER BY p.name
+    `;
     
-    // If no data found, return mock data for production
-    if (!data || data.length === 0) {
-      return getMockInventoryData();
-    }
-    
-    return data;
+    const result = await executeQuery(query);
+    return result || [];
   } catch (error) {
-    console.error('Failed to fetch from JSON file:', error);
-    // Fallback to mock data if file reading fails
-    return getMockInventoryData();
-  }
-};
-
-// Mock data function for production
-const getMockInventoryData = () => {
-  return [
-    {
-      id: 1,
-      name: "iPhone 15 Pro Max",
-      category: "Electronics",
-      price: 43900,
-      cost: 35000,
-      stock: 25,
-      minStock: 5,
-      maxStock: 100,
-      sku: "IP15PM-256-TB",
-      barcode: "1234567890123",
-      supplier: "Apple Thailand",
-      description: "iPhone 15 Pro Max 256GB Titanium Blue",
-      image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400",
-      location: "A-01-001",
-      lastRestocked: "2024-12-01T10:00:00Z",
-      status: "active",
-      warranty: "1 year",
-      unit: "pcs"
-    },
-    {
-      id: 2,
-      name: "MacBook Air M3",
-      category: "Electronics",
-      price: 42900,
-      cost: 34000,
-      stock: 3,
-      minStock: 5,
-      maxStock: 50,
-      sku: "MBA-M3-13-MN",
-      barcode: "2345678901234",
-      supplier: "Apple Thailand",
-      description: "MacBook Air 13-inch M3 chip 256GB SSD Midnight",
-      image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400",
-      location: "A-01-002",
-      lastRestocked: "2024-11-28T14:30:00Z",
-      status: "low_stock",
-      warranty: "1 year",
-      unit: "pcs"
-    },
-    {
-      id: 3,
-      name: "Samsung 4K Smart TV",
-      category: "Electronics",
-      price: 25900,
-      cost: 20000,
-      stock: 0,
-      minStock: 2,
-      maxStock: 20,
-      sku: "SAM-TV-55-4K",
-      barcode: "3456789012345",
-      supplier: "Samsung Electronics",
-      description: "Samsung 55-inch 4K Smart TV",
-      image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400",
-      location: "B-02-001",
-      lastRestocked: "2024-11-15T09:00:00Z",
-      status: "out_of_stock",
-      warranty: "2 years",
-      unit: "pcs"
-    },
-    {
-      id: 4,
-      name: "Sony WH-1000XM5",
-      category: "Electronics",
-      price: 12900,
-      cost: 9500,
-      stock: 15,
-      minStock: 8,
-      maxStock: 50,
-      sku: "SONY-WH1000XM5",
-      barcode: "4567890123456",
-      supplier: "Sony Electronics",
-      description: "Sony WH-1000XM5 Wireless Noise Canceling Headphones",
-      image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400",
-      location: "C-03-001",
-      lastRestocked: "2024-12-02T16:00:00Z",
-      status: "active",
-      warranty: "1 year",
-      unit: "pcs"
-    },
-    {
-      id: 5,
-      name: "iPad Pro 12.9 M4",
-      category: "Electronics",
-      price: 39900,
-      cost: 32000,
-      stock: 8,
-      minStock: 3,
-      maxStock: 30,
-      sku: "IPAD-PRO-M4-129",
-      barcode: "5678901234567",
-      supplier: "Apple Thailand",
-      description: "iPad Pro 12.9-inch M4 chip 256GB Space Gray",
-      image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400",
-      location: "A-01-003",
-      lastRestocked: "2024-11-30T11:15:00Z",
-      status: "active",
-      warranty: "1 year",
-      unit: "pcs"
-    }
-  ];
-};
-
-// Helper function to save inventory to JSON file
-const saveInventoryToJson = async (inventory) => {
-  try {
-    return await writeJsonFile('inventory.json', inventory);
-  } catch (error) {
-    console.error('Failed to save to JSON file:', error);
+    console.error('Error fetching inventory from database:', error);
     throw error;
   }
 };
@@ -168,7 +50,7 @@ router.get('/', async (req, res) => {
   try {
     const { category, search, status, limit, offset, sortBy } = req.query;
     
-    let inventory = await fetchInventoryFromJson();
+    let inventory = await fetchInventoryFromDB();
     
     // Filter by category
     if (category && category !== 'All') {
@@ -193,81 +75,37 @@ router.get('/', async (req, res) => {
       inventory = inventory.filter(item => item.status === status);
     }
     
-    // Add computed fields
-    inventory = inventory.map(item => ({
-      ...item,
-      profit: item.price - item.cost,
-      profitMargin: ((item.price - item.cost) / item.price * 100).toFixed(2),
-      stockStatus: item.stock <= item.minStock ? 'low' : 
-                   item.stock >= item.maxStock ? 'full' : 'normal',
-      totalValue: item.stock * item.cost
-    }));
-    
-    // Sort inventory
+    // Sort
     if (sortBy) {
       inventory.sort((a, b) => {
         switch (sortBy) {
-          case 'name':
-            return a.name.localeCompare(b.name);
-          case 'price':
-            return b.price - a.price;
-          case 'stock':
-            return b.stock - a.stock;
-          case 'lastRestocked':
-            return new Date(b.lastRestocked) - new Date(a.lastRestocked);
-          default:
-            return 0;
+          case 'name': return a.name.localeCompare(b.name);
+          case 'price': return b.price - a.price;
+          case 'stock': return b.stock - a.stock;
+          case 'category': return a.category.localeCompare(b.category);
+          default: return 0;
         }
       });
     }
     
-    // Apply pagination
+    // Pagination
     const startIndex = parseInt(offset) || 0;
-    const limitNum = parseInt(limit) || inventory.length;
-    const paginatedInventory = inventory.slice(startIndex, startIndex + limitNum);
+    const endIndex = limit ? startIndex + parseInt(limit) : inventory.length;
+    const paginatedInventory = inventory.slice(startIndex, endIndex);
     
     res.json({
       success: true,
       data: paginatedInventory,
-      pagination: {
-        total: inventory.length,
-        limit: limitNum,
-        offset: startIndex,
-        hasMore: startIndex + limitNum < inventory.length
-      },
-      summary: {
-        totalItems: inventory.length,
-        totalValue: inventory.reduce((sum, item) => sum + item.totalValue, 0),
-        lowStockItems: inventory.filter(item => item.stockStatus === 'low').length
-      }
+      total: inventory.length,
+      offset: startIndex,
+      limit: limit ? parseInt(limit) : inventory.length
     });
   } catch (error) {
+    console.error('Error fetching inventory:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch inventory',
-      message: error.message
-    });
-  }
-});
-
-// GET /api/inventory/categories - Get all categories
-router.get('/categories', async (req, res) => {
-  try {
-    const inventory = await fetchInventoryFromJson();
-    const categories = [...new Set(inventory.map(item => item.category))];
-    
-    res.json({
-      success: true,
-      data: categories.map(category => ({
-        name: category,
-        count: inventory.filter(item => item.category === category).length
-      }))
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch categories',
-      message: error.message
+      message: 'Failed to fetch inventory data',
+      error: error.message
     });
   }
 });
@@ -275,22 +113,16 @@ router.get('/categories', async (req, res) => {
 // GET /api/inventory/stats - Get inventory statistics
 router.get('/stats', async (req, res) => {
   try {
-    const inventory = await fetchInventoryFromJson();
+    const inventory = await fetchInventoryFromDB();
     
     const stats = {
       totalItems: inventory.length,
-      totalValue: inventory.reduce((sum, item) => sum + (item.stock * item.cost), 0),
-      totalStock: inventory.reduce((sum, item) => sum + item.stock, 0),
+      totalValue: inventory.reduce((sum, item) => sum + item.totalValue, 0),
       lowStockItems: inventory.filter(item => item.stock <= item.minStock).length,
       outOfStockItems: inventory.filter(item => item.stock === 0).length,
-      categoriesCount: [...new Set(inventory.map(item => item.category))].length,
-      averagePrice: inventory.reduce((sum, item) => sum + item.price, 0) / inventory.length,
-      topCategories: Object.entries(
-        inventory.reduce((acc, item) => {
-          acc[item.category] = (acc[item.category] || 0) + 1;
-          return acc;
-        }, {})
-      ).sort((a, b) => b[1] - a[1]).slice(0, 5)
+      categories: [...new Set(inventory.map(item => item.category))].length,
+      averageStockLevel: inventory.length > 0 ? 
+        Math.round(inventory.reduce((sum, item) => sum + item.stock, 0) / inventory.length) : 0
     };
     
     res.json({
@@ -298,10 +130,11 @@ router.get('/stats', async (req, res) => {
       data: stats
     });
   } catch (error) {
+    console.error('Error fetching inventory stats:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch inventory stats',
-      message: error.message
+      message: 'Failed to fetch inventory statistics',
+      error: error.message
     });
   }
 });
@@ -309,255 +142,128 @@ router.get('/stats', async (req, res) => {
 // GET /api/inventory/:id - Get single inventory item
 router.get('/:id', async (req, res) => {
   try {
-    const itemId = parseInt(req.params.id);
-    const inventory = await fetchInventoryFromJson();
-    const item = inventory.find(p => p.id === itemId);
+    const inventory = await fetchInventoryFromDB();
+    const item = inventory.find(item => item.id === parseInt(req.params.id));
     
     if (!item) {
       return res.status(404).json({
         success: false,
-        error: 'Item not found',
-        message: `Inventory item with ID ${itemId} does not exist`
+        message: 'Inventory item not found'
       });
     }
     
-    // Add computed fields
-    const enhancedItem = {
-      ...item,
-      profit: item.price - item.cost,
-      profitMargin: ((item.price - item.cost) / item.price * 100).toFixed(2),
-      stockStatus: item.stock <= item.minStock ? 'low' : 
-                   item.stock >= item.maxStock ? 'full' : 'normal',
-      totalValue: item.stock * item.cost
-    };
-    
     res.json({
       success: true,
-      data: enhancedItem
+      data: item
     });
   } catch (error) {
+    console.error('Error fetching inventory item:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch inventory item',
-      message: error.message
+      message: 'Failed to fetch inventory item',
+      error: error.message
     });
   }
 });
 
-// POST /api/inventory - Create new inventory item
-router.post('/', async (req, res) => {
+// PUT /api/inventory/:id/stock - Update stock level
+router.put('/:id/stock', async (req, res) => {
   try {
-    const { name, sku, description, category, price, cost, stock, minStock, maxStock, barcode, location, tags } = req.body;
+    const { id } = req.params;
+    const { stock, operation } = req.body;
     
-    // Validation
-    if (!name || !sku || !category || price == null || cost == null || stock == null) {
+    if (!stock || typeof stock !== 'number') {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields',
-        message: 'name, sku, category, price, cost, and stock are required'
+        message: 'Valid stock amount is required'
       });
     }
     
-    const inventory = await fetchInventoryFromJson();
+    // Get current stock level
+    const currentQuery = `SELECT stock FROM products WHERE id = ? AND isActive = 1`;
+    const currentResult = await executeQuery(currentQuery, [id]);
     
-    // Check for duplicate SKU
-    const existingSku = inventory.find(item => item.sku === sku);
-    if (existingSku) {
-      return res.status(400).json({
-        success: false,
-        error: 'SKU already exists',
-        message: `Item with SKU ${sku} already exists`
-      });
-    }
-    
-    // Generate new ID
-    const newId = Math.max(...inventory.map(item => item.id)) + 1;
-    
-    const newItem = {
-      id: newId,
-      name: name.trim(),
-      sku: sku.trim().toUpperCase(),
-      description: description || '',
-      category: category.trim(),
-      price: parseFloat(price),
-      cost: parseFloat(cost),
-      stock: parseInt(stock),
-      minStock: parseInt(minStock) || 10,
-      maxStock: parseInt(maxStock) || 1000,
-      barcode: barcode || '',
-      location: location || '',
-      status: parseInt(stock) > 0 ? 'active' : 'out_of_stock',
-      lastRestocked: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      tags: tags || []
-    };
-    
-    inventory.push(newItem);
-    await saveInventoryToJson(inventory);
-    
-    res.status(201).json({
-      success: true,
-      data: newItem,
-      message: 'Inventory item created successfully'
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create inventory item',
-      message: error.message
-    });
-  }
-});
-
-// PUT /api/inventory/:id - Update inventory item
-router.put('/:id', async (req, res) => {
-  try {
-    const itemId = parseInt(req.params.id);
-    const updates = req.body;
-    
-    const inventory = await fetchInventoryFromJson();
-    const itemIndex = inventory.findIndex(item => item.id === itemId);
-    
-    if (itemIndex === -1) {
+    if (!currentResult || currentResult.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'Item not found',
-        message: `Inventory item with ID ${itemId} does not exist`
+        message: 'Product not found'
       });
     }
     
-    // If updating SKU, check for duplicates
-    if (updates.sku && updates.sku !== inventory[itemIndex].sku) {
-      const existingSku = inventory.find(item => item.sku === updates.sku && item.id !== itemId);
-      if (existingSku) {
-        return res.status(400).json({
-          success: false,
-          error: 'SKU already exists',
-          message: `Item with SKU ${updates.sku} already exists`
-        });
-      }
+    let newStock;
+    const currentStock = currentResult[0].stock;
+    
+    if (operation === 'add') {
+      newStock = currentStock + stock;
+    } else if (operation === 'subtract') {
+      newStock = Math.max(0, currentStock - stock);
+    } else {
+      newStock = stock;
     }
     
-    // Update the item
-    const updatedItem = {
-      ...inventory[itemIndex],
-      ...updates,
-      id: itemId, // Prevent ID changes
-      updatedAt: new Date().toISOString()
-    };
-    
-    // Update status based on stock
-    if (updates.stock != null) {
-      updatedItem.status = parseInt(updates.stock) > 0 ? 'active' : 'out_of_stock';
-    }
-    
-    inventory[itemIndex] = updatedItem;
-    await saveInventoryToJson(inventory);
+    // Update stock in database
+    const updateQuery = `UPDATE products SET stock = ? WHERE id = ?`;
+    await executeQuery(updateQuery, [newStock, id]);
     
     res.json({
       success: true,
-      data: updatedItem,
-      message: 'Inventory item updated successfully'
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: 'Failed to update inventory item',
-      message: error.message
-    });
-  }
-});
-
-// DELETE /api/inventory/:id - Delete inventory item
-router.delete('/:id', async (req, res) => {
-  try {
-    const itemId = parseInt(req.params.id);
-    const inventory = await fetchInventoryFromJson();
-    const itemIndex = inventory.findIndex(item => item.id === itemId);
-    
-    if (itemIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: 'Item not found',
-        message: `Inventory item with ID ${itemId} does not exist`
-      });
-    }
-    
-    const deletedItem = inventory.splice(itemIndex, 1)[0];
-    await saveInventoryToJson(inventory);
-    
-    res.json({
-      success: true,
-      data: deletedItem,
-      message: 'Inventory item deleted successfully'
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: 'Failed to delete inventory item',
-      message: error.message
-    });
-  }
-});
-
-// POST /api/inventory/:id/restock - Restock inventory item
-router.post('/:id/restock', async (req, res) => {
-  try {
-    const itemId = parseInt(req.params.id);
-    const { quantity, note } = req.body;
-    
-    if (!quantity || quantity <= 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid quantity',
-        message: 'Quantity must be a positive number'
-      });
-    }
-    
-    const inventory = await fetchInventoryFromJson();
-    const itemIndex = inventory.findIndex(item => item.id === itemId);
-    
-    if (itemIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: 'Item not found',
-        message: `Inventory item with ID ${itemId} does not exist`
-      });
-    }
-    
-    const item = inventory[itemIndex];
-    const oldStock = item.stock;
-    const newStock = oldStock + parseInt(quantity);
-    
-    // Update the item
-    inventory[itemIndex] = {
-      ...item,
-      stock: newStock,
-      status: newStock > 0 ? 'active' : 'out_of_stock',
-      lastRestocked: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    await saveInventoryToJson(inventory);
-    
-    res.json({
-      success: true,
-      data: inventory[itemIndex],
-      message: `Successfully restocked ${quantity} units. Stock updated from ${oldStock} to ${newStock}`,
-      restockInfo: {
-        previousStock: oldStock,
-        restockedQuantity: parseInt(quantity),
+      message: 'Stock updated successfully',
+      data: {
+        id: parseInt(id),
+        previousStock: currentStock,
         newStock: newStock,
-        note: note || null,
-        restockedAt: new Date().toISOString()
+        operation: operation || 'set'
       }
     });
   } catch (error) {
+    console.error('Error updating stock:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to restock inventory item',
-      message: error.message
+      message: 'Failed to update stock',
+      error: error.message
+    });
+  }
+});
+
+// GET /api/inventory/low-stock - Get low stock items
+router.get('/alerts/low-stock', async (req, res) => {
+  try {
+    const inventory = await fetchInventoryFromDB();
+    const lowStockItems = inventory.filter(item => item.stock <= item.minStock);
+    
+    res.json({
+      success: true,
+      data: lowStockItems,
+      count: lowStockItems.length
+    });
+  } catch (error) {
+    console.error('Error fetching low stock items:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch low stock items',
+      error: error.message
+    });
+  }
+});
+
+// GET /api/inventory/categories - Get all categories
+router.get('/meta/categories', async (req, res) => {
+  try {
+    const query = `SELECT DISTINCT category FROM products WHERE isActive = 1 ORDER BY category`;
+    const result = await executeQuery(query);
+    
+    const categories = result ? result.map(row => row.category) : [];
+    
+    res.json({
+      success: true,
+      data: categories
+    });
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch categories',
+      error: error.message
     });
   }
 });

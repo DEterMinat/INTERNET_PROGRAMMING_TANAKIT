@@ -1,204 +1,349 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs').promises;
-const path = require('path');
+const { executeQuery } = require('../config/database');
+const bcrypt = require('bcrypt');
 
-// Helper function to read JSON files
-const readJsonFile = async (filename) => {
+// GET /api/users - Get all users
+router.get('/', async (req, res) => {
   try {
-    const filePath = path.join(process.cwd(), 'BACKEND', 'data', filename);
-    const data = await fs.readFile(filePath, 'utf8');
-    const json = JSON.parse(data);
-    return json;
-  } catch (error) {
-    console.error(`Error reading ${filename}:`, error.message);
-    return [];
-  }
-};
+    const { 
+      role, 
+      isActive, 
+      search, 
+      limit = 50, 
+      offset = 0, 
+      sortBy = 'created_at', 
+      sortOrder = 'DESC' 
+    } = req.query;
 
-// Helper function to get users from JSON file
-const getUsersFromJson = async () => {
-  try {
-    return await readJsonFile('users.json');
-  } catch (error) {
-    console.error('Failed to fetch users from JSON file:', error);
-    return [];
-  }
-};
+    // Build WHERE clause
+    let whereClause = 'WHERE 1=1';
+    let queryParams = [];
 
-// Mock users data
-const mockUsers = [
-  {
-    id: 1,
-    username: 'john_doe',
-    firstName: 'John',
-    lastName: 'Doe',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-    role: 'customer',
-    createdAt: '2024-01-15T10:30:00Z',
-    isActive: true
-  },
-  {
-    id: 2,
-    username: 'jane_smith',
-    firstName: 'Jane',
-    lastName: 'Smith',
-    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150',
-    role: 'customer',
-    createdAt: '2024-01-20T14:15:00Z',
-    isActive: true
-  },
-  {
-    id: 3,
-    username: 'mike_wilson',
-    firstName: 'Mike',
-    lastName: 'Wilson',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-    role: 'customer',
-    createdAt: '2024-02-01T09:15:00Z',
-    isActive: true
-  },
-  {
-    id: 4,
-    username: 'sarah_johnson',
-    firstName: 'Sarah',
-    lastName: 'Johnson',
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150',
-    role: 'customer',
-    createdAt: '2024-02-05T16:45:00Z',
-    isActive: true
-  },
-  {
-    id: 5,
-    username: 'david_brown',
-    firstName: 'David',
-    lastName: 'Brown',
-    avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150',
-    role: 'customer',
-    createdAt: '2024-02-10T11:20:00Z',
-    isActive: true
-  },
-  {
-    id: 6,
-    username: 'emma_davis',
-    firstName: 'Emma',
-    lastName: 'Davis',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-    role: 'customer',
-    createdAt: '2024-02-12T13:30:00Z',
-    isActive: true
-  },
-  {
-    id: 7,
-    username: 'alex_miller',
-    firstName: 'Alex',
-    lastName: 'Miller',
-    avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150',
-    role: 'customer',
-    createdAt: '2024-02-15T08:00:00Z',
-    isActive: true
-  },
-  {
-    id: 8,
-    username: 'lisa_garcia',
-    firstName: 'Lisa',
-    lastName: 'Garcia',
-    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150',
-    role: 'customer',
-    createdAt: '2024-02-18T14:25:00Z',
-    isActive: true
-  },
-  {
-    id: 9,
-    username: 'ryan_taylor',
-    firstName: 'Ryan',
-    lastName: 'Taylor',
-    avatar: 'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?w=150',
-    role: 'customer',
-    createdAt: '2024-02-20T10:10:00Z',
-    isActive: true
-  },
-  {
-    id: 10,
-    username: 'sofia_martinez',
-    firstName: 'Sofia',
-    lastName: 'Martinez',
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
-    role: 'customer',
-    createdAt: '2024-02-22T15:40:00Z',
-    isActive: true
-  }
-];
+    if (role) {
+      whereClause += ' AND role = ?';
+      queryParams.push(role);
+    }
+    if (isActive !== undefined) {
+      whereClause += ' AND isActive = ?';
+      queryParams.push(isActive === 'true' ? 1 : 0);
+    }
+    if (search) {
+      whereClause += ' AND (username LIKE ? OR email LIKE ? OR firstName LIKE ? OR lastName LIKE ?)';
+      const searchPattern = `%${search}%`;
+      queryParams.push(searchPattern, searchPattern, searchPattern, searchPattern);
+    }
 
-// GET /api/users/public - Get public users with query params
-router.get('/public', async (req, res) => {
-  try {
-    let count = parseInt(req.query.limit) || 10;
-    count = Math.min(count, 50); // Max 50 users
+    // Validate sort parameters
+    const validSortColumns = ['id', 'username', 'email', 'firstName', 'lastName', 'role', 'created_at', 'updated_at'];
+    const validSortOrders = ['ASC', 'DESC'];
     
-    const allUsers = await getUsersFromJson();
-    const publicUsers = allUsers
-      .filter(user => user.isActive)
-      .slice(0, count)
-      .map(user => ({
-        id: user.id,
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        avatar: user.avatar,
-        role: user.role,
-        createdAt: user.createdAt
-      }));
+    const orderByColumn = validSortColumns.includes(sortBy) ? sortBy : 'created_at';
+    const orderByDirection = validSortOrders.includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+
+    // Get users (exclude password field)
+    const query = `
+      SELECT id, username, email, firstName, lastName, role, isActive, created_at, updated_at
+      FROM users 
+      ${whereClause}
+      ORDER BY ${orderByColumn} ${orderByDirection}
+      LIMIT ? OFFSET ?
+    `;
     
+    const users = await executeQuery(query, [...queryParams, parseInt(limit), parseInt(offset)]);
+
+    // Get total count
+    const countQuery = `SELECT COUNT(*) as total FROM users ${whereClause}`;
+    const countResult = await executeQuery(countQuery, queryParams);
+    const total = countResult[0].total;
+
     res.json({
       success: true,
-      data: publicUsers,
-      count: publicUsers.length,
-      total: allUsers.filter(user => user.isActive).length
+      data: users || [],
+      total,
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      filters: { role, isActive, search, sortBy, sortOrder }
     });
   } catch (error) {
+    console.error('Error fetching users:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch public users',
-      message: error.message
+      message: 'Failed to fetch users',
+      error: error.message
     });
   }
 });
 
-// GET /api/users - Get all users
-router.get('/', (req, res) => {
+// GET /api/users/:id - Get single user
+router.get('/:id', async (req, res) => {
   try {
-    const { role, active, limit, offset } = req.query;
+    const { id } = req.params;
     
-    let filteredUsers = [...mockUsers];
-    
-    if (role) {
-      filteredUsers = filteredUsers.filter(user => user.role === role);
+    if (!id || isNaN(parseInt(id))) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid user ID is required'
+      });
     }
+
+    const query = `
+      SELECT id, username, email, firstName, lastName, role, isActive, created_at, updated_at
+      FROM users 
+      WHERE id = ?
+    `;
     
-    if (active !== undefined) {
-      filteredUsers = filteredUsers.filter(user => user.isActive === (active === 'true'));
+    const users = await executeQuery(query, [parseInt(id)]);
+
+    if (!users || users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
     }
-    
-    const startIndex = parseInt(offset) || 0;
-    const limitNum = parseInt(limit) || filteredUsers.length;
-    const paginatedUsers = filteredUsers.slice(startIndex, startIndex + limitNum);
-    
+
     res.json({
       success: true,
-      data: paginatedUsers,
-      pagination: {
-        total: filteredUsers.length,
-        limit: limitNum,
-        offset: startIndex,
-        hasMore: startIndex + limitNum < filteredUsers.length
+      data: users[0]
+    });
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch user',
+      error: error.message
+    });
+  }
+});
+
+// POST /api/users - Create new user (admin only)
+router.post('/', async (req, res) => {
+  try {
+    const { username, email, password, firstName, lastName, role = 'user' } = req.body;
+    
+    if (!username || !email || !password || !firstName || !lastName) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required'
+      });
+    }
+
+    // Check if user already exists
+    const checkQuery = 'SELECT id FROM users WHERE email = ? OR username = ?';
+    const existingUser = await executeQuery(checkQuery, [email, username]);
+
+    if (existingUser && existingUser.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: 'User with this email or username already exists'
+      });
+    }
+
+    // Hash password
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Insert new user
+    const insertQuery = `
+      INSERT INTO users (username, email, password, firstName, lastName, role, isActive, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
+    `;
+    
+    const result = await executeQuery(insertQuery, [username, email, hashedPassword, firstName, lastName, role]);
+
+    res.status(201).json({
+      success: true,
+      message: 'User created successfully',
+      data: {
+        id: result.insertId,
+        username,
+        email,
+        firstName,
+        lastName,
+        role
       }
     });
   } catch (error) {
+    console.error('Error creating user:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch users',
-      message: error.message
+      message: 'Failed to create user',
+      error: error.message
+    });
+  }
+});
+
+// PUT /api/users/:id - Update user
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { username, email, firstName, lastName, role, isActive } = req.body;
+    
+    if (!id || isNaN(parseInt(id))) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid user ID is required'
+      });
+    }
+
+    // Check if user exists
+    const checkQuery = 'SELECT id FROM users WHERE id = ?';
+    const existingUser = await executeQuery(checkQuery, [parseInt(id)]);
+
+    if (!existingUser || existingUser.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Check if username/email is already taken by another user
+    if (username || email) {
+      const duplicateQuery = 'SELECT id FROM users WHERE (username = ? OR email = ?) AND id != ?';
+      const duplicateUser = await executeQuery(duplicateQuery, [username || '', email || '', parseInt(id)]);
+
+      if (duplicateUser && duplicateUser.length > 0) {
+        return res.status(409).json({
+          success: false,
+          message: 'Username or email is already taken'
+        });
+      }
+    }
+
+    // Build update query
+    let updateFields = [];
+    let updateParams = [];
+
+    if (username) {
+      updateFields.push('username = ?');
+      updateParams.push(username);
+    }
+    if (email) {
+      updateFields.push('email = ?');
+      updateParams.push(email);
+    }
+    if (firstName) {
+      updateFields.push('firstName = ?');
+      updateParams.push(firstName);
+    }
+    if (lastName) {
+      updateFields.push('lastName = ?');
+      updateParams.push(lastName);
+    }
+    if (role) {
+      updateFields.push('role = ?');
+      updateParams.push(role);
+    }
+    if (isActive !== undefined) {
+      updateFields.push('isActive = ?');
+      updateParams.push(isActive ? 1 : 0);
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No fields to update'
+      });
+    }
+
+    updateFields.push('updated_at = NOW()');
+    updateParams.push(parseInt(id));
+
+    const updateQuery = `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`;
+    await executeQuery(updateQuery, updateParams);
+
+    res.json({
+      success: true,
+      message: 'User updated successfully'
+    });
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update user',
+      error: error.message
+    });
+  }
+});
+
+// DELETE /api/users/:id - Delete user (admin only)
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    if (!id || isNaN(parseInt(id))) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid user ID is required'
+      });
+    }
+
+    // Check if user exists
+    const checkQuery = 'SELECT id FROM users WHERE id = ?';
+    const existingUser = await executeQuery(checkQuery, [parseInt(id)]);
+
+    if (!existingUser || existingUser.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Soft delete - set isActive to 0
+    const deleteQuery = 'UPDATE users SET isActive = 0, updated_at = NOW() WHERE id = ?';
+    await executeQuery(deleteQuery, [parseInt(id)]);
+
+    res.json({
+      success: true,
+      message: 'User deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete user',
+      error: error.message
+    });
+  }
+});
+
+// GET /api/users/statistics - Get user statistics
+router.get('/stats/summary', async (req, res) => {
+  try {
+    const queries = {
+      total: 'SELECT COUNT(*) as count FROM users WHERE isActive = 1',
+      admins: 'SELECT COUNT(*) as count FROM users WHERE role = "admin" AND isActive = 1',
+      users: 'SELECT COUNT(*) as count FROM users WHERE role = "user" AND isActive = 1',
+      inactive: 'SELECT COUNT(*) as count FROM users WHERE isActive = 0',
+      recentUsers: 'SELECT COUNT(*) as count FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND isActive = 1'
+    };
+
+    const results = await Promise.all([
+      executeQuery(queries.total),
+      executeQuery(queries.admins),
+      executeQuery(queries.users),
+      executeQuery(queries.inactive),
+      executeQuery(queries.recentUsers)
+    ]);
+
+    const statistics = {
+      totalUsers: results[0][0].count,
+      admins: results[1][0].count,
+      users: results[2][0].count,
+      inactiveUsers: results[3][0].count,
+      recentUsers: results[4][0].count
+    };
+
+    res.json({
+      success: true,
+      data: statistics
+    });
+  } catch (error) {
+    console.error('Error fetching user statistics:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch user statistics',
+      error: error.message
     });
   }
 });
