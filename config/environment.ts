@@ -12,6 +12,10 @@ interface ApiConfig {
     staging: string;
     production: string;
   };
+  fallbackUrls: {
+    development: string[];
+    production: string[];
+  };
   endpoints: {
     inventory: ApiEndpoints;
     products: ApiEndpoints;
@@ -31,6 +35,12 @@ export const apiConfig: ApiConfig = {
     development: 'http://localhost:9785',
     staging: 'http://nindam.sytes.net:9785', 
     production: 'http://nindam.sytes.net:9785'
+  },
+  
+  // Fallback URLs สำหรับกรณี primary server ไม่พร้อม
+  fallbackUrls: {
+    development: ['http://localhost:3001', 'http://127.0.0.1:9785'],
+    production: ['http://localhost:9785', 'http://127.0.0.1:9785']
   },
   
   // API Endpoints - สามารถเปลี่ยนได้ง่าย
@@ -103,8 +113,11 @@ export const apiConfig: ApiConfig = {
   
   // Helper Methods
   getCurrentBaseUrl(): string {
-    // สำหรับ Production ใช้ production URL
-    const env = 'production'; // เปลี่ยนจาก development เป็น production
+    // ตรวจสอบ environment อัตโนมัติ
+    const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+    const env = isDev ? 'development' : 'production';
+    
+    console.log(`🌐 API Environment: ${env}, URL: ${this.baseUrls[env]}`);
     return this.baseUrls[env];
   },
   

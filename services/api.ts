@@ -28,12 +28,12 @@ class ApiService {
     return this.request(endpoint);
   }
   
-  // Helper method สำหรับ HTTP requests
+  // Helper method สำหรับ HTTP requests with fallback
   private async request<T>(
     endpoint: string, 
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
-    const url = `${this.baseUrl}${endpoint}`;
+    const primaryUrl = `${this.baseUrl}${endpoint}`;
     
     const defaultOptions: RequestInit = {
       headers: {
@@ -50,17 +50,44 @@ class ApiService {
       },
     };
 
+    // พยายามเชื่อมต่อ primary URL ก่อน
     try {
-      const response = await fetch(url, mergedOptions);
+      console.log(`🔄 Trying primary API: ${primaryUrl}`);
+      const response = await fetch(primaryUrl, mergedOptions);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      return await response.json();
-    } catch (error) {
-      console.error(`API Error for ${url}:`, error);
-      throw error;
+      const result = await response.json();
+      console.log(`✅ Primary API success: ${primaryUrl}`);
+      return result;
+    } catch (primaryError) {
+      console.warn(`❌ Primary API failed: ${primaryError}`);
+      
+      // หาก primary API ล้มเหลว ให้ลอง fallback URLs
+      const fallbackUrls = apiConfig.fallbackUrls?.development || [];
+      
+      for (const fallbackBaseUrl of fallbackUrls) {
+        try {
+          const fallbackUrl = `${fallbackBaseUrl}${endpoint}`;
+          console.log(`🔄 Trying fallback API: ${fallbackUrl}`);
+          
+          const response = await fetch(fallbackUrl, mergedOptions);
+          
+          if (response.ok) {
+            const result = await response.json();
+            console.log(`✅ Fallback API success: ${fallbackUrl}`);
+            return result;
+          }
+        } catch (fallbackError) {
+          console.warn(`❌ Fallback API failed: ${fallbackError}`);
+          continue;
+        }
+      }
+      
+      // หาก API ทุกตัวล้มเหลว
+      throw new Error(`All API endpoints failed. Primary: ${primaryError}`);
     }
   }
 
