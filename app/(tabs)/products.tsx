@@ -1,4 +1,3 @@
-import { apiConfig } from '@/config/environment';
 import { Image } from 'expo-image';
 import React, { useEffect, useState } from 'react';
 import {
@@ -43,31 +42,20 @@ export default function ProductsScreen() {
     try {
       setIsLoading(true);
       
-      // Fetch products from backend API using centralized API service
-      const response = await productsApi.getAll();
+      console.log('🔄 Loading products from Database API...');
+      // ใช้ Database API endpoint ใหม่
+      const response = await productsApi.getList();
       
       if (response.success && response.data && Array.isArray(response.data)) {
+        console.log('✅ Products loaded from database:', response.data.length);
         setProducts(response.data);
       } else {
-        throw new Error('Invalid API response format');
-      }
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      
-      // Fallback to JSON endpoint if regular API fails
-      try {
-        console.log('Trying JSON endpoint fallback...');
-        const jsonResponse = await fetch(`${apiConfig.baseUrls.production}/json/products.json`);
-        const jsonData = await jsonResponse.json();
-        if (Array.isArray(jsonData)) {
-          setProducts(jsonData);
-        } else {
-          setProducts([]);
-        }
-      } catch (jsonError) {
-        console.error('JSON endpoint also failed:', jsonError);
+        console.error('❌ Database API response error:', response.error);
         setProducts([]);
       }
+    } catch (error) {
+      console.error('❌ Error loading products from database:', error);
+      setProducts([]);
     } finally {
       setIsLoading(false);
     }

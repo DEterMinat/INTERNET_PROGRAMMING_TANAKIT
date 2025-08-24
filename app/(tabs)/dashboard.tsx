@@ -70,61 +70,51 @@ interface StockAlert {
   timestamp: string;
 }
 
-// API functions
+// API functions - Updated for Database API
 const fetchDashboardData = async (): Promise<{
   items: InventoryItem[];
   trends: InventoryTrend[];
   alerts: StockAlert[];
 }> => {
   try {
-    const inventoryUrl = apiConfig.buildUrl('inventory', 'list');
+    console.log('🔄 Loading dashboard data from Database API...');
+    
+    // ใช้ API endpoint ใหม่ที่เชื่อมต่อ Database
+    const inventoryUrl = apiConfig.buildUrl('dashboard', 'inventory');
     const response = await fetch(inventoryUrl);
+    
     if (response.ok) {
       const result = await response.json();
-      // Extract data array from API response
+      console.log('✅ Dashboard data loaded from database');
+      
+      // Extract data array from Database API response
       const data = result.success && Array.isArray(result.data) ? result.data : [];
       
-      // Generate mock trends data
+      // Generate trends and alerts based on real data
       const trends = generateMockTrends();
-      
-      // Generate alerts based on stock levels
       const alerts = generateStockAlerts(data);
       
       return { items: data, trends, alerts };
+    } else {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
   } catch (error) {
-    console.log('API failed, using mock data...', error);
+    console.error('❌ Error loading dashboard data from database:', error);
+    
+    // Return empty data instead of mock fallback (DB-only approach)
+    return {
+      items: [],
+      trends: [],
+      alerts: [{
+        id: 'db-error',
+        type: 'low_stock',
+        itemName: 'Database Connection',
+        message: 'Unable to connect to database. Please check connection.',
+        severity: 'high',
+        timestamp: new Date().toISOString()
+      }]
+    };
   }
-  
-  // Fallback mock data
-  const mockItems = [
-    {
-      id: 1,
-      name: "iPhone 15 Pro Max",
-      category: "Electronics",
-      price: 43900,
-      cost: 35000,
-      stock: 25,
-      minStock: 5,
-      maxStock: 100,
-      sku: "IP15PM-256-TB",
-      barcode: "1234567890123",
-      supplier: "Apple Thailand",
-      description: "iPhone 15 Pro Max 256GB Titanium Blue",
-      image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400",
-      location: "A-01-001",
-      lastRestocked: "2024-12-01T10:00:00Z",
-      status: "active",
-      warranty: "1 year",
-      unit: "pcs"
-    }
-  ];
-  
-  return {
-    items: mockItems,
-    trends: generateMockTrends(),
-    alerts: generateStockAlerts(mockItems)
-  };
 };
 
 const generateMockTrends = (): InventoryTrend[] => {

@@ -48,24 +48,27 @@ export const apiConfig: ApiConfig = {
       lowStock: '/api/inventory/low-stock'
     },
     
-    // Products Management
+    // Products Management - Updated for Database API
     products: {
-      list: '/api/products',
-      create: '/api/products', 
-      getById: (id: number) => `/api/products/${id}`,
-      update: (id: number) => `/api/products/${id}`,
-      delete: (id: number) => `/api/products/${id}`,
-      featured: '/api/products/featured',
-      categories: '/api/products/categories',
-      search: '/api/products/search'
+      list: '/api/db-products',              // ดึงข้อมูลจาก database
+      getById: (id: number) => `/api/db-products/${id}`,
+      statistics: '/api/db-products/statistics',
+      search: '/api/db-products/search',
+      categories: '/api/db-products/categories',
+      featured: '/api/db-products/featured',
+      // Legacy endpoint (still available)
+      legacy: '/api/products'
     },
     
-    // Dashboard & Analytics
+    // Dashboard & Analytics - Updated for Database
     dashboard: {
       overview: '/api/dashboard',
+      inventory: '/api/inventory',
+      statistics: '/api/db-products/statistics',
       sales: '/api/dashboard/sales',
       analytics: '/api/dashboard/analytics', 
-      reports: '/api/dashboard/reports'
+      reports: '/api/dashboard/reports',
+      health: '/health'
     },
     
     // Authentication

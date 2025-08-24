@@ -21,6 +21,12 @@ class ApiService {
   constructor() {
     this.baseUrl = apiConfig.getCurrentBaseUrl();
   }
+
+  // Health Check - ตรวจสอบสถานะ Backend และ Database
+  async healthCheck(): Promise<ApiResponse> {
+    const endpoint = apiConfig.endpoints.dashboard.health as string;
+    return this.request(endpoint);
+  }
   
   // Helper method สำหรับ HTTP requests
   private async request<T>(
@@ -157,9 +163,9 @@ class ApiService {
     }
   };
 
-  // Products API Methods
+  // Products API Methods - Updated for Database API
   products = {
-    // GET /api/products - รายการผลิตภัณฑ์
+    // GET /api/db-products - รายการผลิตภัณฑ์จาก Database
     getList: async (params?: {
       category?: string;
       search?: string;
@@ -181,15 +187,27 @@ class ApiService {
       return this.request(url);
     },
     
-    // GET /api/products/:id - รายละเอียดผลิตภัณฑ์
+    // GET /api/db-products/:id - รายละเอียดผลิตภัณฑ์จาก Database
     getById: async (id: number) => {
       const endpoint = apiConfig.endpoints.products.getById as (id: number) => string;
       return this.request(endpoint(id));
     },
     
-    // GET /api/products/featured - ผลิตภัณฑ์แนะนำ
+    // GET /api/db-products/statistics - สถิติผลิตภัณฑ์
+    getStatistics: async () => {
+      const endpoint = apiConfig.endpoints.products.statistics as string;
+      return this.request(endpoint);
+    },
+    
+    // GET /api/db-products/featured - ผลิตภัณฑ์แนะนำ
     getFeatured: async () => {
       const endpoint = apiConfig.endpoints.products.featured as string;
+      return this.request(endpoint);
+    },
+    
+    // GET /api/db-products/categories - หมวดหมู่ผลิตภัณฑ์
+    getCategories: async () => {
+      const endpoint = apiConfig.endpoints.products.categories as string;
       return this.request(endpoint);
     }
   };
@@ -290,7 +308,9 @@ export const productsApi = {
   getAll: api.products.getList,
   getList: api.products.getList,
   getById: api.products.getById,
-  getFeatured: api.products.getFeatured
+  getFeatured: api.products.getFeatured,
+  getStatistics: api.products.getStatistics,
+  getCategories: api.products.getCategories
 };
 
 export const usersApi = {
