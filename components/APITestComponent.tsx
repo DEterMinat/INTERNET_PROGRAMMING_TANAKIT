@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import {
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { api, productsApi, dashboardApi } from '../services/api';
+import { api, dashboardApi, productsApi } from '../services/api';
 
 interface TestResult {
   endpoint: string;
