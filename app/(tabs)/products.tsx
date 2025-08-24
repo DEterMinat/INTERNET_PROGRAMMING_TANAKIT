@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  ScrollView, 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Image, 
-  Alert,
-  TextInput,
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useCallback, useEffect, useState } from 'react';
+import {
   ActivityIndicator,
+  Alert,
+  Image,
+  Modal,
   RefreshControl,
-  Modal
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import SidebarLayout from '../../components/SidebarLayout';
-import { LinearGradient } from 'expo-linear-gradient';
 
 interface Product {
   id: number;
