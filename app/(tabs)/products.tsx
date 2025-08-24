@@ -14,6 +14,7 @@ import {
   View
 } from 'react-native';
 import SidebarLayout from '../../components/SidebarLayout';
+import { apiService } from '../../services/apiService';
 
 interface Product {
   id: number;
@@ -88,7 +89,36 @@ export default function Products() {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      // Mock data for development since API might not be available
+      
+      // เรียกใช้ API เพื่อดึงข้อมูลสินค้า
+      const response = await apiService.products.getList({
+        limit: 50,
+      });
+
+      if (response.success && response.data && Array.isArray(response.data)) {
+        // แปลงข้อมูลจาก API มาเป็น format ที่ใช้ใน UI
+        const apiProducts: Product[] = response.data.map((item: any) => ({
+          id: item.id,
+          name: item.name || 'ไม่ระบุชื่อ',
+          price: item.price || 0,
+          stock: item.stock || 0,
+          category: item.category || 'อื่นๆ',
+          description: item.description || '',
+          image: item.image || undefined,
+          status: item.stock > 0 ? 'active' : 'out_of_stock',
+          lastUpdated: item.updated_at || new Date().toISOString().split('T')[0],
+          sku: item.id.toString(), // ใช้ ID เป็น SKU
+        }));
+
+        setProducts(apiProducts);
+      } else {
+        throw new Error('Failed to fetch products');
+      }
+    } catch (error) {
+      console.error('Products fetch error:', error);
+      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถโหลดข้อมูลสินค้าได้ กำลังใช้ข้อมูลตัวอย่าง');
+      
+      // Fallback เป็น mock data ถ้า API ไม่พร้อม
       const mockProducts: Product[] = [
         {
           id: 1,
@@ -164,8 +194,6 @@ export default function Products() {
         }
       ];
       setProducts(mockProducts);
-    } catch (error) {
-      console.error('Error loading products:', error);
     } finally {
       setLoading(false);
     }
@@ -202,7 +230,7 @@ export default function Products() {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'active': return 'พร้อมขาย';
-      case 'inactive': return 'ไม่พร้อมขาย';
+      case 'inactive': return 'ไม่ใช้งาน';
       case 'out_of_stock': return 'หมดสต็อก';
       default: return 'ไม่ทราบสถานะ';
     }
@@ -213,7 +241,7 @@ export default function Products() {
       <SidebarLayout>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#3B82F6" />
-          <Text style={styles.loadingText}>กำลังโหลดข้อมูลสินค้า...</Text>
+          <Text style={styles.loadingText}>กำลังโหลดสินค้า...</Text>
         </View>
       </SidebarLayout>
     );
@@ -228,13 +256,13 @@ export default function Products() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>📦 จัดการสินค้า</Text>
-          <Text style={styles.headerSubtitle}>ระบบจัดการสินค้าคงคลัง</Text>
+          <Text style={styles.headerTitle}>จัดการสินค้า</Text>
+          <Text style={styles.headerSubtitle}>รายการสินค้าและข้อมูลสต็อก</Text>
         </View>
 
         {/* Quick Stats */}
         <View style={styles.statsSection}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsScroll}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statsScroll}>
             {quickStats.map((stat, index) => (
               <View key={index} style={styles.statCard}>
                 <LinearGradient colors={stat.gradient as any} style={styles.statGradient}>
@@ -247,47 +275,29 @@ export default function Products() {
           </ScrollView>
         </View>
 
-        {/* Search and Filter */}
+        {/* Search */}
         <View style={styles.searchSection}>
           <View style={styles.searchContainer}>
-            <Image 
-              source={{ uri: 'https://img.icons8.com/fluency-systems-filled/20/search.png' }}
-              style={styles.searchIcon}
-            />
+            <Text style={styles.searchIcon}>🔍</Text>
             <TextInput
               style={styles.searchInput}
-              placeholder="ค้นหาสินค้า, SKU..."
+              placeholder="ค้นหาสินค้า..."
               value={searchQuery}
               onChangeText={setSearchQuery}
-              placeholderTextColor="#64748B"
             />
-            {searchQuery ? (
-              <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Image 
-                  source={{ uri: 'https://img.icons8.com/fluency-systems-filled/20/multiply.png' }}
-                  style={styles.clearIcon}
-                />
-              </TouchableOpacity>
-            ) : null}
           </View>
         </View>
 
         {/* Categories */}
         <View style={styles.categoriesSection}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesScroll}>
-            {categories.map((category, index) => (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesScroll}>
+            {categories.map((category) => (
               <TouchableOpacity
-                key={index}
-                style={[
-                  styles.categoryButton,
-                  selectedCategory === category && styles.categoryButtonActive
-                ]}
+                key={category}
+                style={[styles.categoryButton, selectedCategory === category && styles.categoryButtonActive]}
                 onPress={() => setSelectedCategory(category)}
               >
-                <Text style={[
-                  styles.categoryText,
-                  selectedCategory === category && styles.categoryTextActive
-                ]}>
+                <Text style={[styles.categoryText, selectedCategory === category && styles.categoryTextActive]}>
                   {category}
                 </Text>
               </TouchableOpacity>
@@ -295,67 +305,33 @@ export default function Products() {
           </ScrollView>
         </View>
 
-        {/* View Mode Toggle */}
+        {/* Controls */}
         <View style={styles.controlsSection}>
           <View style={styles.viewModeToggle}>
             <TouchableOpacity
-              style={[
-                styles.viewModeButton,
-                viewMode === 'grid' && styles.viewModeButtonActive
-              ]}
+              style={[styles.viewModeButton, viewMode === 'grid' && styles.viewModeButtonActive]}
               onPress={() => setViewMode('grid')}
             >
-              <Image 
-                source={{ uri: 'https://img.icons8.com/fluency-systems-filled/16/grid.png' }}
-                style={[
-                  styles.viewModeIcon,
-                  viewMode === 'grid' && styles.viewModeIconActive
-                ]}
-              />
+              <Text style={styles.viewModeIcon}>⊞</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[
-                styles.viewModeButton,
-                viewMode === 'list' && styles.viewModeButtonActive
-              ]}
+              style={[styles.viewModeButton, viewMode === 'list' && styles.viewModeButtonActive]}
               onPress={() => setViewMode('list')}
             >
-              <Image 
-                source={{ uri: 'https://img.icons8.com/fluency-systems-filled/16/list.png' }}
-                style={[
-                  styles.viewModeIcon,
-                  viewMode === 'list' && styles.viewModeIconActive
-                ]}
-              />
+              <Text style={styles.viewModeIcon}>☰</Text>
             </TouchableOpacity>
           </View>
-          
-          <TouchableOpacity 
-            style={styles.addButton}
-            onPress={() => Alert.alert('เพิ่มสินค้า', 'ฟีเจอร์เพิ่มสินค้าใหม่')}
-          >
-            <Image 
-              source={{ uri: 'https://img.icons8.com/fluency-systems-filled/16/plus.png' }}
-              style={styles.addIcon}
-            />
-            <Text style={styles.addText}>เพิ่มสินค้า</Text>
+          <TouchableOpacity style={styles.addButton}>
+            <Text style={styles.addText}>+ เพิ่มสินค้า</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Products List/Grid */}
+        {/* Products */}
         <View style={styles.productsSection}>
           {filteredProducts.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <Image 
-                source={{ uri: 'https://img.icons8.com/fluency/64/search-more.png' }}
-                style={styles.emptyIcon}
-              />
               <Text style={styles.emptyTitle}>ไม่พบสินค้า</Text>
-              <Text style={styles.emptySubtitle}>
-                {searchQuery || selectedCategory !== 'ทั้งหมด' 
-                  ? 'ลองเปลี่ยนคำค้นหาหรือหมวดหมู่'
-                  : 'ยังไม่มีสินค้าในระบบ'}
-              </Text>
+              <Text style={styles.emptySubtitle}>ลองใช้คำค้นหาอื่น หรือเพิ่มสินค้าใหม่</Text>
             </View>
           ) : (
             <View style={viewMode === 'grid' ? styles.productsGrid : styles.productsList}>
@@ -365,7 +341,9 @@ export default function Products() {
                   style={viewMode === 'grid' ? styles.productGridItem : styles.productListItem}
                   onPress={() => handleProductPress(product)}
                 >
-                  <Image source={{ uri: product.image }} style={styles.productImage} />
+                  {product.image && (
+                    <Image source={{ uri: product.image }} style={styles.productImage} />
+                  )}
                   <View style={styles.productInfo}>
                     <View style={styles.productHeader}>
                       <Text style={styles.productName} numberOfLines={2}>{product.name}</Text>
@@ -376,12 +354,9 @@ export default function Products() {
                     <Text style={styles.productSku}>SKU: {product.sku}</Text>
                     <Text style={styles.productCategory}>{product.category}</Text>
                     <View style={styles.productDetails}>
-                      <Text style={styles.productPrice}>{product.price.toLocaleString()}฿</Text>
-                      <Text style={[
-                        styles.productStock,
-                        { color: product.stock < 10 ? '#EF4444' : '#10B981' }
-                      ]}>
-                        คงเหลือ: {product.stock}
+                      <Text style={styles.productPrice}>฿{product.price.toLocaleString()}</Text>
+                      <Text style={[styles.productStock, { color: product.stock < 10 ? '#EF4444' : '#10B981' }]}>
+                        สต็อก: {product.stock}
                       </Text>
                     </View>
                   </View>
@@ -391,7 +366,7 @@ export default function Products() {
           )}
         </View>
 
-        {/* Product Detail Modal */}
+        {/* Modal */}
         <Modal
           animationType="slide"
           transparent={true}
@@ -400,73 +375,47 @@ export default function Products() {
         >
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>รายละเอียดสินค้า</Text>
+                <TouchableOpacity onPress={() => setModalVisible(false)}>
+                  <Text style={styles.modalCloseIcon}>✕</Text>
+                </TouchableOpacity>
+              </View>
               {selectedProduct && (
                 <>
-                  <View style={styles.modalHeader}>
-                    <Text style={styles.modalTitle}>รายละเอียดสินค้า</Text>
-                    <TouchableOpacity onPress={() => setModalVisible(false)}>
-                      <Image 
-                        source={{ uri: 'https://img.icons8.com/fluency-systems-filled/24/multiply.png' }}
-                        style={styles.modalCloseIcon}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  
-                  <Image source={{ uri: selectedProduct.image }} style={styles.modalProductImage} />
-                  
+                  {selectedProduct.image && (
+                    <Image source={{ uri: selectedProduct.image }} style={styles.modalProductImage} />
+                  )}
                   <View style={styles.modalProductInfo}>
                     <Text style={styles.modalProductName}>{selectedProduct.name}</Text>
                     <Text style={styles.modalProductDescription}>{selectedProduct.description}</Text>
-                    
                     <View style={styles.modalInfoGrid}>
                       <View style={styles.modalInfoItem}>
-                        <Text style={styles.modalInfoLabel}>ราคา:</Text>
-                        <Text style={styles.modalInfoValue}>{selectedProduct.price.toLocaleString()}฿</Text>
+                        <Text style={styles.modalInfoLabel}>SKU</Text>
+                        <Text style={styles.modalInfoValue}>{selectedProduct.sku}</Text>
                       </View>
                       <View style={styles.modalInfoItem}>
-                        <Text style={styles.modalInfoLabel}>คงเหลือ:</Text>
-                        <Text style={styles.modalInfoValue}>{selectedProduct.stock} ชิ้น</Text>
-                      </View>
-                      <View style={styles.modalInfoItem}>
-                        <Text style={styles.modalInfoLabel}>หมวดหมู่:</Text>
+                        <Text style={styles.modalInfoLabel}>หมวดหมู่</Text>
                         <Text style={styles.modalInfoValue}>{selectedProduct.category}</Text>
                       </View>
                       <View style={styles.modalInfoItem}>
-                        <Text style={styles.modalInfoLabel}>SKU:</Text>
-                        <Text style={styles.modalInfoValue}>{selectedProduct.sku}</Text>
+                        <Text style={styles.modalInfoLabel}>ราคา</Text>
+                        <Text style={styles.modalInfoValue}>฿{selectedProduct.price.toLocaleString()}</Text>
+                      </View>
+                      <View style={styles.modalInfoItem}>
+                        <Text style={styles.modalInfoLabel}>สต็อก</Text>
+                        <Text style={styles.modalInfoValue}>{selectedProduct.stock}</Text>
+                      </View>
+                      <View style={styles.modalInfoItem}>
+                        <Text style={styles.modalInfoLabel}>สถานะ</Text>
+                        <Text style={styles.modalInfoValue}>{getStatusText(selectedProduct.status)}</Text>
                       </View>
                     </View>
-                    
                     <View style={styles.modalActions}>
-                      <TouchableOpacity 
-                        style={[styles.modalActionButton, styles.editButton]}
-                        onPress={() => {
-                          setModalVisible(false);
-                          Alert.alert('แก้ไขสินค้า', `แก้ไข ${selectedProduct.name}`);
-                        }}
-                      >
+                      <TouchableOpacity style={[styles.modalActionButton, styles.editButton]}>
                         <Text style={styles.editButtonText}>แก้ไข</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity 
-                        style={[styles.modalActionButton, styles.deleteButton]}
-                        onPress={() => {
-                          Alert.alert(
-                            'ลบสินค้า',
-                            `คุณต้องการลบ ${selectedProduct.name} หรือไม่?`,
-                            [
-                              { text: 'ยกเลิก', style: 'cancel' },
-                              { 
-                                text: 'ลบ', 
-                                style: 'destructive',
-                                onPress: () => {
-                                  setModalVisible(false);
-                                  Alert.alert('ลบสินค้า', 'ลบสินค้าเรียบร้อยแล้ว');
-                                }
-                              }
-                            ]
-                          );
-                        }}
-                      >
+                      <TouchableOpacity style={[styles.modalActionButton, styles.deleteButton]}>
                         <Text style={styles.deleteButtonText}>ลบ</Text>
                       </TouchableOpacity>
                     </View>
@@ -477,7 +426,6 @@ export default function Products() {
           </View>
         </Modal>
 
-        {/* Bottom Spacing */}
         <View style={styles.bottomSpacing} />
       </ScrollView>
     </SidebarLayout>
@@ -567,20 +515,13 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(226, 232, 240, 0.5)',
   },
   searchIcon: {
-    width: 20,
-    height: 20,
-    tintColor: '#64748B',
+    fontSize: 16,
     marginRight: 12,
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
     color: '#1E293B',
-  },
-  clearIcon: {
-    width: 20,
-    height: 20,
-    tintColor: '#64748B',
   },
 
   // Categories
@@ -636,12 +577,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#3B82F6',
   },
   viewModeIcon: {
-    width: 16,
-    height: 16,
-    tintColor: '#64748B',
-  },
-  viewModeIconActive: {
-    tintColor: '#FFFFFF',
+    fontSize: 16,
+    color: '#64748B',
   },
   addButton: {
     backgroundColor: '#3B82F6',
@@ -650,12 +587,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 8,
-  },
-  addIcon: {
-    width: 16,
-    height: 16,
-    tintColor: '#FFFFFF',
-    marginRight: 8,
   },
   addText: {
     fontSize: 14,
@@ -755,12 +686,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 60,
   },
-  emptyIcon: {
-    width: 64,
-    height: 64,
-    marginBottom: 16,
-    opacity: 0.5,
-  },
   emptyTitle: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -799,9 +724,8 @@ const styles = StyleSheet.create({
     color: '#1E293B',
   },
   modalCloseIcon: {
-    width: 24,
-    height: 24,
-    tintColor: '#64748B',
+    fontSize: 20,
+    color: '#64748B',
   },
   modalProductImage: {
     width: '100%',

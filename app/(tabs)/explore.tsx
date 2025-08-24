@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import { 
-  ScrollView, 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Image, 
-  TextInput, 
-  FlatList,
-  Dimensions 
-} from 'react-native';
-import AppLayout from '../../components/AppLayout';
 import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState } from 'react';
+import {
+  Dimensions,
+  FlatList,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import SidebarLayout from '../../components/SidebarLayout';
 
 const { width } = Dimensions.get('window');
 const isTablet = width >= 768;
@@ -227,7 +227,7 @@ export default function Explore() {
   };
 
   return (
-    <AppLayout>
+    <SidebarLayout>
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
@@ -330,7 +330,7 @@ export default function Explore() {
           />
         </View>
       </View>
-    </AppLayout>
+    </SidebarLayout>
   );
 }
 

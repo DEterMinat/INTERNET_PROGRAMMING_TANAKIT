@@ -171,7 +171,7 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
               </View>
               {!sidebarCollapsed && (
                 <View style={styles.userInfo}>
-                  <Text style={styles.userName}>ธนกิตต์ แสงสว่าง</Text>
+                  <Text style={styles.userName}>ธนกฤษ ศิริธีรพันธ์</Text>
                   <Text style={styles.userRole}>ผู้ดูแลระบบ</Text>
                 </View>
               )}
