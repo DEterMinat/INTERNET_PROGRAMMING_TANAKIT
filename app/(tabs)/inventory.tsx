@@ -74,71 +74,7 @@ export default function Inventory() {
     } catch (err) {
       console.error('Inventory fetch error:', err);
       setError('ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง');
-      
-      // Fallback เป็น mock data
-      const mockInventory: InventoryItem[] = [
-        {
-          id: '1',
-          name: 'แล็ปท็อปเกมมิ่ง XYZ Pro',
-          sku: 'SKU-001234',
-          category: 'อิเล็กทรอนิกส์',
-          price: 25900,
-          stock: 120,
-          unit: 'เครื่อง',
-          location: 'A-01',
-          status: 'active',
-          lastUpdated: '22/06/2023'
-        },
-        {
-          id: '2',
-          name: 'เมาส์เกมส์ ABC Ultra',
-          sku: 'SKU-002156',
-          category: 'อุปกรณ์คอมพิวเตอร์',
-          price: 1590,
-          stock: 42,
-          unit: 'ชิ้น',
-          location: 'B-15',
-          status: 'active',
-          lastUpdated: '10/07/2023'
-        },
-        {
-          id: '3',
-          name: 'หูฟังไร้สาย Premium',
-          sku: 'SKU-003789',
-          category: 'อิเล็กทรอนิกส์',
-          price: 2890,
-          stock: 8,
-          unit: 'ชิ้น',
-          location: 'C-08',
-          status: 'low_stock',
-          lastUpdated: '05/03/2023'
-        },
-        {
-          id: '4',
-          name: 'ชุดไขควง 5 ชิ้น',
-          sku: 'SKU-004321',
-          category: 'เครื่องมือ',
-          price: 420,
-          stock: 98,
-          unit: 'ชุด',
-          location: 'D-12',
-          status: 'active',
-          lastUpdated: '18/01/2023'
-        },
-        {
-          id: '5',
-          name: 'พัดลมตั้งโต๊ะ 12 นิ้ว',
-          sku: 'SKU-005678',
-          category: 'เครื่องใช้ไฟฟ้า',
-          price: 1890,
-          stock: 5,
-          unit: 'เครื่อง',
-          location: 'E-05',
-          status: 'low_stock',
-          lastUpdated: '25/02/2023'
-        }
-      ];
-      setInventory(mockInventory);
+      setInventory([]); // ไม่มีข้อมูล
     } finally {
       setLoading(false);
     }

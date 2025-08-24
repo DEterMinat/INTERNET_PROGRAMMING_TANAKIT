@@ -79,43 +79,7 @@ export default function Dashboard() {
     } catch (err) {
       console.error('Dashboard fetch error:', err);
       setError('ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง');
-      
-      // Fallback เป็น mock data ถ้า API ไม่พร้อม
-      const fallbackStats: StatCard[] = [
-        {
-          title: 'สินค้าทั้งหมด',
-          value: '1,245',
-          change: '+5.2%',
-          changeType: 'up',
-          icon: '📦',
-          color: '#3B82F6'
-        },
-        {
-          title: 'มูลค่าสินค้าคงเหลือ',
-          value: '฿3,456,789',
-          change: '+2.7%',
-          changeType: 'up',
-          icon: '💰',
-          color: '#10B981'
-        },
-        {
-          title: 'สินค้าใกล้หมด',
-          value: '24',
-          change: '+12.3%',
-          changeType: 'down',
-          icon: '⚠️',
-          color: '#EF4444'
-        },
-        {
-          title: 'หมวดหมู่สินค้า',
-          value: '15',
-          change: '+8.1%',
-          changeType: 'up',
-          icon: '📊',
-          color: '#8B5CF6'
-        }
-      ];
-      setStats(fallbackStats);
+      setStats([]); // ไม่มีข้อมูล
     } finally {
       setLoading(false);
     }
@@ -222,35 +186,18 @@ export default function Dashboard() {
                 </TouchableOpacity>
               </View>
             </View>
-            <View style={styles.mockChart}>
-              <Text style={styles.mockChartText}>📊 กราฟแสดงสถิติการขาย</Text>
-              <Text style={styles.mockChartSubtext}>แสดงแนวโน้มการขายใน 12 เดือนที่ผ่านมา</Text>
+            <View style={styles.noDataContainer}>
+              <Text style={styles.noDataText}>ไม่มีข้อมูลกราฟ</Text>
+              <Text style={styles.noDataSubtext}>รอข้อมูลจาก API</Text>
             </View>
           </View>
 
           {/* Category Distribution */}
           <View style={styles.chartCard}>
             <Text style={styles.chartTitle}>สัดส่วนหมวดหมู่สินค้า</Text>
-            <View style={styles.mockPieChart}>
-              <Text style={styles.mockChartText}>🥧 กราฟวงกลม</Text>
-              <View style={styles.legendContainer}>
-                <View style={styles.legendItem}>
-                  <View style={[styles.legendColor, { backgroundColor: '#3B82F6' }]} />
-                  <Text style={styles.legendText}>อิเล็กทรอนิกส์ (45%)</Text>
-                </View>
-                <View style={styles.legendItem}>
-                  <View style={[styles.legendColor, { backgroundColor: '#10B981' }]} />
-                  <Text style={styles.legendText}>เฟอร์นิเจอร์ (30%)</Text>
-                </View>
-                <View style={styles.legendItem}>
-                  <View style={[styles.legendColor, { backgroundColor: '#F59E0B' }]} />
-                  <Text style={styles.legendText}>เครื่องใช้ (20%)</Text>
-                </View>
-                <View style={styles.legendItem}>
-                  <View style={[styles.legendColor, { backgroundColor: '#EF4444' }]} />
-                  <Text style={styles.legendText}>อื่นๆ (5%)</Text>
-                </View>
-              </View>
+            <View style={styles.noDataContainer}>
+              <Text style={styles.noDataText}>ไม่มีข้อมูลกราฟวงกลม</Text>
+              <Text style={styles.noDataSubtext}>รอข้อมูลจาก API</Text>
             </View>
           </View>
         </View>
@@ -481,6 +428,26 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   mockChartSubtext: {
+    fontSize: 12,
+    color: '#94A3B8',
+    textAlign: 'center',
+  },
+  noDataContainer: {
+    height: 200,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: '#CBD5E1',
+  },
+  noDataText: {
+    fontSize: 16,
+    color: '#64748B',
+    marginBottom: 8,
+  },
+  noDataSubtext: {
     fontSize: 12,
     color: '#94A3B8',
     textAlign: 'center',

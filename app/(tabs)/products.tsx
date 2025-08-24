@@ -116,84 +116,8 @@ export default function Products() {
       }
     } catch (error) {
       console.error('Products fetch error:', error);
-      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถโหลดข้อมูลสินค้าได้ กำลังใช้ข้อมูลตัวอย่าง');
-      
-      // Fallback เป็น mock data ถ้า API ไม่พร้อม
-      const mockProducts: Product[] = [
-        {
-          id: 1,
-          name: 'โทรศัพท์มือถือ Samsung Galaxy',
-          price: 25990,
-          stock: 15,
-          category: 'อิเล็กทรอนิกส์',
-          description: 'สมาร์ทโฟนรุ่นใหม่ล่าสุด',
-          image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=200&fit=crop',
-          status: 'active',
-          lastUpdated: '2024-01-15',
-          sku: 'PHONE-001'
-        },
-        {
-          id: 2,
-          name: 'หูฟังไร้สาย AirPods Pro',
-          price: 8990,
-          stock: 3,
-          category: 'อิเล็กทรอนิกส์',
-          description: 'หูฟังไร้สายคุณภาพสูง',
-          image: 'https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=300&h=200&fit=crop',
-          status: 'active',
-          lastUpdated: '2024-01-14',
-          sku: 'AUDIO-002'
-        },
-        {
-          id: 3,
-          name: 'เก้าอี้สำนักงาน ergonomic',
-          price: 4590,
-          stock: 0,
-          category: 'เฟอร์นิเจอร์',
-          description: 'เก้าอี้นั่งสบายสำหรับทำงาน',
-          image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=300&h=200&fit=crop',
-          status: 'out_of_stock',
-          lastUpdated: '2024-01-13',
-          sku: 'FURN-003'
-        },
-        {
-          id: 4,
-          name: 'เสื้อเชิ้ตผ้าฝ้าย',
-          price: 890,
-          stock: 25,
-          category: 'เสื้อผ้า',
-          description: 'เสื้อเชิ้ตคุณภาพดี',
-          image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=300&h=200&fit=crop',
-          status: 'active',
-          lastUpdated: '2024-01-12',
-          sku: 'CLOTH-004'
-        },
-        {
-          id: 5,
-          name: 'แล็ปท็อป MacBook Air',
-          price: 39900,
-          stock: 8,
-          category: 'อิเล็กทรอนิกส์',
-          description: 'แล็ปท็อปสำหรับงานและเรียน',
-          image: 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=300&h=200&fit=crop',
-          status: 'active',
-          lastUpdated: '2024-01-11',
-          sku: 'LAPTOP-005'
-        },
-        {
-          id: 6,
-          name: 'โต๊ะทำงานไม้',
-          price: 6500,
-          stock: 12,
-          category: 'เฟอร์นิเจอร์',
-          description: 'โต๊ะทำงานไม้แท้ทนทาน',
-          image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=300&h=200&fit=crop',
-          status: 'active',
-          lastUpdated: '2024-01-10',
-          sku: 'DESK-006'
-        }
-      ];
-      setProducts(mockProducts);
+      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถโหลดข้อมูลสินค้าได้');
+      setProducts([]); // ไม่มีข้อมูล
     } finally {
       setLoading(false);
     }
