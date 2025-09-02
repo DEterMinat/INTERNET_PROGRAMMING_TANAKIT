@@ -271,6 +271,8 @@ router.get('/meta/categories', async (req, res) => {
 // POST /api/inventory - Create new inventory item (creates new product)
 router.post('/', async (req, res) => {
   try {
+    console.log('POST /api/inventory called with body:', JSON.stringify(req.body, null, 2));
+    
     const {
       name,
       category,
@@ -283,8 +285,11 @@ router.post('/', async (req, res) => {
       maxStock = 100
     } = req.body;
 
+    console.log('Extracted values:', { name, category, price, stock, brand });
+
     // Validation
     if (!name || !category || price === undefined || stock === undefined) {
+      console.log('Validation failed:', { name: !!name, category: !!category, price: price !== undefined, stock: stock !== undefined });
       return res.status(400).json({
         success: false,
         message: 'กรุณากรอกข้อมูลที่จำเป็น: name, category, price, stock'
@@ -298,6 +303,9 @@ router.post('/', async (req, res) => {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 0, 0, NOW(), NOW())
     `;
 
+    console.log('About to execute query:', insertQuery);
+    console.log('With values:', [name, category, parseFloat(price), parseInt(stock), brand || null, description || null, image || null]);
+
     const result = await executeQuery(insertQuery, [
       name,
       category,
@@ -308,10 +316,14 @@ router.post('/', async (req, res) => {
       image || null
     ]);
 
+    console.log('Insert result:', result);
+
     if (result && result.insertId) {
       // Fetch the created item in inventory format
       const newItem = await fetchInventoryFromDB();
       const createdItem = newItem.find(item => item.id == result.insertId);
+      
+      console.log('Created item:', createdItem);
 
       res.status(201).json({
         success: true,
@@ -319,6 +331,7 @@ router.post('/', async (req, res) => {
         data: createdItem
       });
     } else {
+      console.log('Insert failed, no insertId');
       throw new Error('Failed to create inventory item');
     }
   } catch (error) {
