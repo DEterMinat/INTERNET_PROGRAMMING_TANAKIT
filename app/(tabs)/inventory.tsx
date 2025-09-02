@@ -115,13 +115,31 @@ export default function Inventory() {
 
   // เพิ่มสินค้าใหม่
   const handleAddProduct = async () => {
+    console.log('handleAddProduct called with:', newProduct);
+    
     if (!newProduct.name || !newProduct.category || !newProduct.price || !newProduct.stock) {
+      console.log('Validation failed:', {
+        name: !newProduct.name,
+        category: !newProduct.category,
+        price: !newProduct.price,
+        stock: !newProduct.stock
+      });
       Alert.alert('ข้อผิดพลาด', 'กรุณากรอกข้อมูลที่จำเป็น (ชื่อ, หมวดหมู่, ราคา, สต็อก)');
       return;
     }
 
     try {
       setLoading(true);
+      console.log('About to call API with data:', {
+        name: newProduct.name,
+        category: newProduct.category,
+        price: parseFloat(newProduct.price),
+        stock: parseInt(newProduct.stock),
+        brand: newProduct.brand || '',
+        description: newProduct.description || '',
+        image: newProduct.image || ''
+      });
+      
       const response = await apiService.inventory.create({
         name: newProduct.name,
         category: newProduct.category,
@@ -131,6 +149,8 @@ export default function Inventory() {
         description: newProduct.description || '',
         image: newProduct.image || ''
       });
+
+      console.log('API response:', response);
 
       if (response.success) {
         Alert.alert('สำเร็จ', 'เพิ่มสินค้าใหม่แล้ว', [

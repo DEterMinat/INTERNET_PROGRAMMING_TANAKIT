@@ -115,6 +115,12 @@ class ApiService {
       maxStock?: number;
     }) => {
       const endpoint = apiConfig.endpoints.inventory.list as string;
+      console.log('apiService.inventory.create called');
+      console.log('Base URL:', this.baseUrl);
+      console.log('Endpoint:', endpoint);
+      console.log('Full URL:', `${this.baseUrl}${endpoint}`);
+      console.log('Data:', data);
+      
       return this.request(endpoint, {
         method: 'POST',
         body: JSON.stringify(data),
