@@ -100,6 +100,60 @@ class ApiService {
     getStats: async () => {
       const endpoint = apiConfig.endpoints.inventory.stats as string;
       return this.request(endpoint);
+    },
+
+    // POST /api/inventory - เพิ่มสินค้าใหม่
+    create: async (data: {
+      name: string;
+      category: string;
+      price: number;
+      stock: number;
+      brand?: string;
+      description?: string;
+      image?: string;
+      minStock?: number;
+      maxStock?: number;
+    }) => {
+      const endpoint = apiConfig.endpoints.inventory.list as string;
+      return this.request(endpoint, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+
+    // PUT /api/inventory/:id - อัพเดทสินค้า
+    update: async (id: number, data: {
+      name?: string;
+      category?: string;
+      price?: number;
+      stock?: number;
+      brand?: string;
+      description?: string;
+      image?: string;
+      featured?: boolean;
+    }) => {
+      const endpoint = `/api/inventory/${id}`;
+      return this.request(endpoint, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+    },
+
+    // DELETE /api/inventory/:id - ลบสินค้า
+    delete: async (id: number) => {
+      const endpoint = `/api/inventory/${id}`;
+      return this.request(endpoint, {
+        method: 'DELETE',
+      });
+    },
+
+    // PUT /api/inventory/:id/stock - อัพเดทจำนวนสต็อก
+    updateStock: async (id: number, stock: number, adjustment?: number) => {
+      const endpoint = `/api/inventory/${id}/stock`;
+      return this.request(endpoint, {
+        method: 'PUT',
+        body: JSON.stringify({ stock, adjustment }),
+      });
     }
   };
 
@@ -160,6 +214,52 @@ class ApiService {
     getFeatured: async () => {
       const endpoint = apiConfig.endpoints.products.featured as string;
       return this.request(endpoint);
+    },
+
+    // POST /api/products - เพิ่มผลิตภัณฑ์ใหม่
+    create: async (data: {
+      name: string;
+      price: number;
+      category: string;
+      stock: number;
+      image?: string;
+      rating?: number;
+      description?: string;
+      brand?: string;
+      featured?: boolean;
+    }) => {
+      const endpoint = apiConfig.endpoints.products.list as string;
+      return this.request(endpoint, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+
+    // PUT /api/products/:id - อัพเดทผลิตภัณฑ์
+    update: async (id: number, data: {
+      name?: string;
+      price?: number;
+      image?: string;
+      category?: string;
+      rating?: number;
+      description?: string;
+      stock?: number;
+      brand?: string;
+      featured?: boolean;
+    }) => {
+      const endpoint = `/api/products/${id}`;
+      return this.request(endpoint, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+    },
+
+    // DELETE /api/products/:id - ลบผลิตภัณฑ์
+    delete: async (id: number) => {
+      const endpoint = `/api/products/${id}`;
+      return this.request(endpoint, {
+        method: 'DELETE',
+      });
     }
   };
 

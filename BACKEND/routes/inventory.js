@@ -268,4 +268,199 @@ router.get('/meta/categories', async (req, res) => {
   }
 });
 
+// POST /api/inventory - Create new inventory item (creates new product)
+router.post('/', async (req, res) => {
+  try {
+    const {
+      name,
+      category,
+      price,
+      stock,
+      brand,
+      description,
+      image,
+      minStock = 5,
+      maxStock = 100
+    } = req.body;
+
+    // Validation
+    if (!name || !category || price === undefined || stock === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: 'กรุณากรอกข้อมูลที่จำเป็น: name, category, price, stock'
+      });
+    }
+
+    const insertQuery = `
+      INSERT INTO products (
+        name, category, price, stock, brand, description, image, 
+        isActive, featured, rating, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 0, 0, NOW(), NOW())
+    `;
+
+    const result = await executeQuery(insertQuery, [
+      name,
+      category,
+      parseFloat(price),
+      parseInt(stock),
+      brand || null,
+      description || null,
+      image || null
+    ]);
+
+    if (result && result.insertId) {
+      // Fetch the created item in inventory format
+      const newItem = await fetchInventoryFromDB();
+      const createdItem = newItem.find(item => item.id == result.insertId);
+
+      res.status(201).json({
+        success: true,
+        message: 'เพิ่มสินค้าในคลังสำเร็จ',
+        data: createdItem
+      });
+    } else {
+      throw new Error('Failed to create inventory item');
+    }
+  } catch (error) {
+    console.error('Error creating inventory item:', error);
+    res.status(500).json({
+      success: false,
+      message: 'ไม่สามารถเพิ่มสินค้าในคลังได้',
+      error: error.message
+    });
+  }
+});
+
+// PUT /api/inventory/:id - Update inventory item
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      name,
+      category,
+      price,
+      stock,
+      brand,
+      description,
+      image,
+      featured
+    } = req.body;
+
+    // Check if item exists
+    const checkQuery = `SELECT id FROM products WHERE id = ? AND isActive = 1`;
+    const existingItem = await executeQuery(checkQuery, [id]);
+
+    if (!existingItem || existingItem.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'ไม่พบสินค้าที่ต้องการแก้ไข'
+      });
+    }
+
+    // Build update query dynamically
+    const updateFields = [];
+    const updateValues = [];
+
+    if (name !== undefined) {
+      updateFields.push('name = ?');
+      updateValues.push(name);
+    }
+    if (category !== undefined) {
+      updateFields.push('category = ?');
+      updateValues.push(category);
+    }
+    if (price !== undefined) {
+      updateFields.push('price = ?');
+      updateValues.push(parseFloat(price));
+    }
+    if (stock !== undefined) {
+      updateFields.push('stock = ?');
+      updateValues.push(parseInt(stock));
+    }
+    if (brand !== undefined) {
+      updateFields.push('brand = ?');
+      updateValues.push(brand);
+    }
+    if (description !== undefined) {
+      updateFields.push('description = ?');
+      updateValues.push(description);
+    }
+    if (image !== undefined) {
+      updateFields.push('image = ?');
+      updateValues.push(image);
+    }
+    if (featured !== undefined) {
+      updateFields.push('featured = ?');
+      updateValues.push(featured ? 1 : 0);
+    }
+
+    updateFields.push('updated_at = NOW()');
+    updateValues.push(id);
+
+    const updateQuery = `
+      UPDATE products 
+      SET ${updateFields.join(', ')}
+      WHERE id = ?
+    `;
+
+    await executeQuery(updateQuery, updateValues);
+
+    // Fetch updated item in inventory format
+    const inventory = await fetchInventoryFromDB();
+    const updatedItem = inventory.find(item => item.id == id);
+
+    res.json({
+      success: true,
+      message: 'อัพเดทสินค้าในคลังสำเร็จ',
+      data: updatedItem
+    });
+  } catch (error) {
+    console.error('Error updating inventory item:', error);
+    res.status(500).json({
+      success: false,
+      message: 'ไม่สามารถอัพเดทสินค้าในคลังได้',
+      error: error.message
+    });
+  }
+});
+
+// DELETE /api/inventory/:id - Delete inventory item (soft delete)
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if item exists
+    const checkQuery = `SELECT id, name FROM products WHERE id = ? AND isActive = 1`;
+    const existingItem = await executeQuery(checkQuery, [id]);
+
+    if (!existingItem || existingItem.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'ไม่พบสินค้าที่ต้องการลบ'
+      });
+    }
+
+    // Soft delete - set isActive to 0
+    const deleteQuery = `
+      UPDATE products 
+      SET isActive = 0, updated_at = NOW() 
+      WHERE id = ?
+    `;
+
+    await executeQuery(deleteQuery, [id]);
+
+    res.json({
+      success: true,
+      message: `ลบสินค้า "${existingItem[0].name}" จากคลังสำเร็จ`
+    });
+  } catch (error) {
+    console.error('Error deleting inventory item:', error);
+    res.status(500).json({
+      success: false,
+      message: 'ไม่สามารถลบสินค้าจากคลังได้',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;

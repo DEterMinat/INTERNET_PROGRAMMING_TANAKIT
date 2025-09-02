@@ -15,24 +15,28 @@ interface InventoryItem {
   status: 'active' | 'inactive' | 'low_stock';
   image?: string;
   lastUpdated: string;
+  brand?: string;
+  description?: string;
 }
 
 export default function Inventory() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ทั้งหมด');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
   
   const [newProduct, setNewProduct] = useState({
     name: '',
-    sku: '',
     category: '',
     price: '',
     stock: '',
-    unit: 'ชิ้น',
-    location: ''
+    brand: '',
+    description: '',
+    image: ''
   });
 
   const categories = ['ทั้งหมด', 'อิเล็กทรอนิกส์', 'อุปกรณ์คอมพิวเตอร์', 'เครื่องใช้ไฟฟ้า', 'เครื่องมือ', 'อื่นๆ'];
@@ -60,11 +64,13 @@ export default function Inventory() {
           category: item.category || 'อื่นๆ',
           price: item.price || 0,
           stock: item.stock || 0,
-          unit: item.unit || 'ชิ้น',
+          unit: 'ชิ้น',
           location: item.location || 'ไม่ระบุ',
           status: item.stock <= 10 ? 'low_stock' : 'active',
-          lastUpdated: item.updated_at || new Date().toISOString().split('T')[0],
-          image: item.image
+          lastUpdated: item.lastRestocked || new Date().toISOString().split('T')[0],
+          image: item.image,
+          brand: item.supplier,
+          description: item.description
         }));
 
         setInventory(inventoryData);
@@ -74,7 +80,7 @@ export default function Inventory() {
     } catch (err) {
       console.error('Inventory fetch error:', err);
       setError('ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง');
-      setInventory([]); // ไม่มีข้อมูล
+      setInventory([]);
     } finally {
       setLoading(false);
     }
@@ -105,37 +111,143 @@ export default function Inventory() {
     }
   };
 
-  const handleAddProduct = () => {
-    if (!newProduct.name || !newProduct.sku || !newProduct.price) {
+  // เพิ่มสินค้าใหม่
+  const handleAddProduct = async () => {
+    if (!newProduct.name || !newProduct.category || !newProduct.price || !newProduct.stock) {
+      Alert.alert('ข้อผิดพลาด', 'กรุณากรอกข้อมูลที่จำเป็น (ชื่อ, หมวดหมู่, ราคา, สต็อก)');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await apiService.inventory.create({
+        name: newProduct.name,
+        category: newProduct.category,
+        price: parseFloat(newProduct.price),
+        stock: parseInt(newProduct.stock),
+        brand: newProduct.brand || '',
+        description: newProduct.description || '',
+        image: newProduct.image || ''
+      });
+
+      if (response.success) {
+        Alert.alert('สำเร็จ', 'เพิ่มสินค้าใหม่แล้ว', [
+          { text: 'ตกลง', onPress: () => loadInventory() }
+        ]);
+        setNewProduct({
+          name: '',
+          category: '',
+          price: '',
+          stock: '',
+          brand: '',
+          description: '',
+          image: ''
+        });
+        setShowAddModal(false);
+      } else {
+        throw new Error(response.message || 'Failed to add product');
+      }
+    } catch (err: any) {
+      console.error('Add product error:', err);
+      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถเพิ่มสินค้าได้: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // แก้ไขสินค้า
+  const handleEditProduct = (item: InventoryItem) => {
+    setEditingItem(item);
+    setNewProduct({
+      name: item.name,
+      category: item.category,
+      price: item.price.toString(),
+      stock: item.stock.toString(),
+      brand: item.brand || '',
+      description: item.description || '',
+      image: item.image || ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateProduct = async () => {
+    if (!editingItem) return;
+
+    if (!newProduct.name || !newProduct.category || !newProduct.price || !newProduct.stock) {
       Alert.alert('ข้อผิดพลาด', 'กรุณากรอกข้อมูลที่จำเป็น');
       return;
     }
 
-    const newItem: InventoryItem = {
-      id: Date.now().toString(),
-      name: newProduct.name,
-      sku: newProduct.sku,
-      category: newProduct.category || 'อื่นๆ',
-      price: parseFloat(newProduct.price) || 0,
-      stock: parseInt(newProduct.stock) || 0,
-      unit: newProduct.unit,
-      location: newProduct.location || 'A-00',
-      status: 'active',
-      lastUpdated: new Date().toLocaleDateString('th-TH')
-    };
+    try {
+      setLoading(true);
+      const response = await apiService.inventory.update(parseInt(editingItem.id), {
+        name: newProduct.name,
+        category: newProduct.category,
+        price: parseFloat(newProduct.price),
+        stock: parseInt(newProduct.stock),
+        brand: newProduct.brand || '',
+        description: newProduct.description || '',
+        image: newProduct.image || ''
+      });
 
-    setInventory(prev => [newItem, ...prev]);
-    setNewProduct({
-      name: '',
-      sku: '',
-      category: '',
-      price: '',
-      stock: '',
-      unit: 'ชิ้น',
-      location: ''
-    });
-    setShowAddModal(false);
-    Alert.alert('สำเร็จ', 'เพิ่มสินค้าใหม่แล้ว');
+      if (response.success) {
+        Alert.alert('สำเร็จ', 'อัพเดทสินค้าแล้ว', [
+          { text: 'ตกลง', onPress: () => loadInventory() }
+        ]);
+        setShowEditModal(false);
+        setEditingItem(null);
+        setNewProduct({
+          name: '',
+          category: '',
+          price: '',
+          stock: '',
+          brand: '',
+          description: '',
+          image: ''
+        });
+      } else {
+        throw new Error(response.message || 'Failed to update product');
+      }
+    } catch (err: any) {
+      console.error('Update product error:', err);
+      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถอัพเดทสินค้าได้: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ลบสินค้า
+  const handleDeleteProduct = (item: InventoryItem) => {
+    Alert.alert(
+      'ยืนยันการลบ',
+      `ต้องการลบสินค้า "${item.name}" หรือไม่?`,
+      [
+        { text: 'ยกเลิก', style: 'cancel' },
+        { 
+          text: 'ลบ', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setLoading(true);
+              const response = await apiService.inventory.delete(parseInt(item.id));
+              
+              if (response.success) {
+                Alert.alert('สำเร็จ', 'ลบสินค้าแล้ว', [
+                  { text: 'ตกลง', onPress: () => loadInventory() }
+                ]);
+              } else {
+                throw new Error(response.message || 'Failed to delete product');
+              }
+            } catch (err: any) {
+              console.error('Delete product error:', err);
+              Alert.alert('ข้อผิดพลาด', 'ไม่สามารถลบสินค้าได้: ' + err.message);
+            } finally {
+              setLoading(false);
+            }
+          }
+        }
+      ]
+    );
   };
 
   if (loading) {
@@ -198,14 +310,16 @@ export default function Inventory() {
                 key={category}
                 style={[
                   styles.filterButton,
-                  selectedCategory === category && styles.activeFilter
+                  selectedCategory === category && styles.activeFilterButton
                 ]}
                 onPress={() => setSelectedCategory(category)}
               >
-                <Text style={[
-                  styles.filterText,
-                  selectedCategory === category && styles.activeFilterText
-                ]}>
+                <Text
+                  style={[
+                    styles.filterButtonText,
+                    selectedCategory === category && styles.activeFilterButtonText
+                  ]}
+                >
                   {category}
                 </Text>
               </TouchableOpacity>
@@ -213,172 +327,303 @@ export default function Inventory() {
           </ScrollView>
         </View>
 
-        {/* Inventory Table */}
-        <View style={styles.tableContainer}>
-          <View style={styles.tableCard}>
-            <View style={styles.tableHeader}>
-              <Text style={styles.tableTitle}>รายการสินค้าคงคลัง</Text>
+        {/* Stats Cards */}
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{inventory.length}</Text>
+            <Text style={styles.statLabel}>รายการสินค้า</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>
+              {inventory.reduce((sum, item) => sum + item.stock, 0)}
+            </Text>
+            <Text style={styles.statLabel}>จำนวนสต็อก</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>
+              {inventory.filter(item => item.status === 'low_stock').length}
+            </Text>
+            <Text style={styles.statLabel}>สต็อกต่ำ</Text>
+          </View>
+        </View>
+
+        {/* Inventory List */}
+        <View style={styles.listContainer}>
+          {filteredInventory.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateText}>
+                {searchQuery || selectedCategory !== 'ทั้งหมด' 
+                  ? 'ไม่พบสินค้าที่ตรงกับเงื่อนไข' 
+                  : 'ยังไม่มีสินค้าในระบบ'}
+              </Text>
             </View>
-            
-            <View style={styles.table}>
-              {/* Table Header */}
-              <View style={styles.tableHeaderRow}>
-                <Text style={[styles.tableHeaderText, { flex: 2 }]}>สินค้า</Text>
-                <Text style={[styles.tableHeaderText, { flex: 1 }]}>ราคา</Text>
-                <Text style={[styles.tableHeaderText, { flex: 1 }]}>สต็อก</Text>
-                <Text style={[styles.tableHeaderText, { flex: 1 }]}>สถานะ</Text>
-              </View>
-              
-              {/* Table Body */}
-              {filteredInventory.map((item) => (
-                <View key={item.id} style={styles.tableRow}>
-                  <View style={[styles.tableCell, { flex: 2 }]}>
-                    <Text style={styles.productName}>{item.name}</Text>
-                    <Text style={styles.productSku}>SKU: {item.sku}</Text>
+          ) : (
+            filteredInventory.map((item) => (
+              <View key={item.id} style={styles.inventoryCard}>
+                <View style={styles.cardHeader}>
+                  <View style={styles.cardTitle}>
+                    <Text style={styles.itemName}>{item.name}</Text>
+                    <Text style={styles.itemSku}>SKU: {item.sku}</Text>
                   </View>
-                  <View style={[styles.tableCell, { flex: 1 }]}>
-                    <Text style={styles.tableCellText}>
-                      ฿{item.price.toLocaleString()}
-                    </Text>
+                  <View style={styles.cardActions}>
+                    <TouchableOpacity 
+                      style={styles.editButton}
+                      onPress={() => handleEditProduct(item)}
+                    >
+                      <Text style={styles.editButtonText}>แก้ไข</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={styles.deleteButton}
+                      onPress={() => handleDeleteProduct(item)}
+                    >
+                      <Text style={styles.deleteButtonText}>ลบ</Text>
+                    </TouchableOpacity>
                   </View>
-                  <View style={[styles.tableCell, { flex: 1 }]}>
-                    <Text style={styles.tableCellText}>
-                      {item.stock} {item.unit}
-                    </Text>
-                  </View>
-                  <View style={[styles.tableCell, { flex: 1 }]}>
-                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}>
-                      <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
-                        {getStatusText(item.status)}
-                      </Text>
+                </View>
+                
+                <View style={styles.cardBody}>
+                  <View style={styles.itemInfo}>
+                    <Text style={styles.itemCategory}>{item.category}</Text>
+                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
+                      <Text style={styles.statusText}>{getStatusText(item.status)}</Text>
                     </View>
                   </View>
+                  
+                  <View style={styles.itemDetails}>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>ราคา:</Text>
+                      <Text style={styles.detailValue}>฿{item.price.toLocaleString()}</Text>
+                    </View>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>สต็อก:</Text>
+                      <Text style={styles.detailValue}>{item.stock} {item.unit}</Text>
+                    </View>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>ตำแหน่ง:</Text>
+                      <Text style={styles.detailValue}>{item.location}</Text>
+                    </View>
+                    {item.brand && (
+                      <View style={styles.detailRow}>
+                        <Text style={styles.detailLabel}>ยี่ห้อ:</Text>
+                        <Text style={styles.detailValue}>{item.brand}</Text>
+                      </View>
+                    )}
+                  </View>
                 </View>
-              ))}
-              
-              {filteredInventory.length === 0 && (
-                <View style={styles.emptyRow}>
-                  <Text style={styles.emptyText}>ไม่พบข้อมูลสินค้า</Text>
-                </View>
-              )}
-            </View>
-          </View>
+              </View>
+            ))
+          )}
         </View>
 
         {/* Add Product Modal */}
         <Modal
-          animationType="slide"
-          transparent={true}
           visible={showAddModal}
-          onRequestClose={() => setShowAddModal(false)}
+          animationType="slide"
+          presentationStyle="pageSheet"
         >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>เพิ่มสินค้าใหม่</Text>
-                <TouchableOpacity 
-                  style={styles.closeButton}
-                  onPress={() => setShowAddModal(false)}
-                >
-                  <Text style={styles.closeButtonText}>✕</Text>
-                </TouchableOpacity>
-              </View>
-              
-              <ScrollView style={styles.modalForm} showsVerticalScrollIndicator={false}>
-                <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>ชื่อสินค้า *</Text>
-                  <TextInput
-                    style={styles.formInput}
-                    value={newProduct.name}
-                    onChangeText={(text) => setNewProduct({...newProduct, name: text})}
-                    placeholder="กรอกชื่อสินค้า"
-                  />
-                </View>
-                
-                <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>SKU *</Text>
-                  <TextInput
-                    style={styles.formInput}
-                    value={newProduct.sku}
-                    onChangeText={(text) => setNewProduct({...newProduct, sku: text})}
-                    placeholder="รหัสสินค้า"
-                  />
-                </View>
-                
-                <View style={styles.formRow}>
-                  <View style={styles.formHalf}>
-                    <Text style={styles.formLabel}>หมวดหมู่</Text>
-                    <TextInput
-                      style={styles.formInput}
-                      value={newProduct.category}
-                      onChangeText={(text) => setNewProduct({...newProduct, category: text})}
-                      placeholder="หมวดหมู่"
-                    />
-                  </View>
-                  <View style={styles.formHalf}>
-                    <Text style={styles.formLabel}>ราคา *</Text>
-                    <TextInput
-                      style={styles.formInput}
-                      value={newProduct.price}
-                      onChangeText={(text) => setNewProduct({...newProduct, price: text})}
-                      placeholder="0.00"
-                      keyboardType="numeric"
-                    />
-                  </View>
-                </View>
-                
-                <View style={styles.formRow}>
-                  <View style={styles.formHalf}>
-                    <Text style={styles.formLabel}>จำนวน</Text>
-                    <TextInput
-                      style={styles.formInput}
-                      value={newProduct.stock}
-                      onChangeText={(text) => setNewProduct({...newProduct, stock: text})}
-                      placeholder="0"
-                      keyboardType="numeric"
-                    />
-                  </View>
-                  <View style={styles.formHalf}>
-                    <Text style={styles.formLabel}>หน่วย</Text>
-                    <TextInput
-                      style={styles.formInput}
-                      value={newProduct.unit}
-                      onChangeText={(text) => setNewProduct({...newProduct, unit: text})}
-                      placeholder="ชิ้น"
-                    />
-                  </View>
-                </View>
-                
-                <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>ตำแหน่ง</Text>
-                  <TextInput
-                    style={styles.formInput}
-                    value={newProduct.location}
-                    onChangeText={(text) => setNewProduct({...newProduct, location: text})}
-                    placeholder="A-01"
-                  />
-                </View>
-              </ScrollView>
-              
-              <View style={styles.modalFooter}>
-                <TouchableOpacity 
-                  style={styles.cancelButton}
-                  onPress={() => setShowAddModal(false)}
-                >
-                  <Text style={styles.cancelButtonText}>ยกเลิก</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.submitButton}
-                  onPress={handleAddProduct}
-                >
-                  <Text style={styles.submitButtonText}>เพิ่มสินค้า</Text>
-                </TouchableOpacity>
-              </View>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>เพิ่มสินค้าใหม่</Text>
+              <TouchableOpacity
+                onPress={() => setShowAddModal(false)}
+                style={styles.closeButton}
+              >
+                <Text style={styles.closeButtonText}>ปิด</Text>
+              </TouchableOpacity>
             </View>
+            
+            <ScrollView style={styles.modalBody}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>ชื่อสินค้า *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newProduct.name}
+                  onChangeText={(text) => setNewProduct({...newProduct, name: text})}
+                  placeholder="กรุณากรอกชื่อสินค้า"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>หมวดหมู่ *</Text>
+                <View style={styles.categorySelector}>
+                  {categories.filter(cat => cat !== 'ทั้งหมด').map(category => (
+                    <TouchableOpacity
+                      key={category}
+                      style={[
+                        styles.categoryOption,
+                        newProduct.category === category && styles.selectedCategory
+                      ]}
+                      onPress={() => setNewProduct({...newProduct, category})}
+                    >
+                      <Text style={[
+                        styles.categoryOptionText,
+                        newProduct.category === category && styles.selectedCategoryText
+                      ]}>
+                        {category}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>ราคา (บาท) *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newProduct.price}
+                  onChangeText={(text) => setNewProduct({...newProduct, price: text})}
+                  placeholder="0.00"
+                  keyboardType="numeric"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>จำนวนสต็อก *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newProduct.stock}
+                  onChangeText={(text) => setNewProduct({...newProduct, stock: text})}
+                  placeholder="0"
+                  keyboardType="numeric"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>ยี่ห้อ</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newProduct.brand}
+                  onChangeText={(text) => setNewProduct({...newProduct, brand: text})}
+                  placeholder="ยี่ห้อสินค้า"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>รายละเอียด</Text>
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  value={newProduct.description}
+                  onChangeText={(text) => setNewProduct({...newProduct, description: text})}
+                  placeholder="รายละเอียดสินค้า"
+                  multiline
+                  numberOfLines={3}
+                />
+              </View>
+
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={handleAddProduct}
+              >
+                <Text style={styles.submitButtonText}>บันทึกสินค้า</Text>
+              </TouchableOpacity>
+            </ScrollView>
           </View>
         </Modal>
 
-        <View style={styles.bottomSpacing} />
+        {/* Edit Product Modal */}
+        <Modal
+          visible={showEditModal}
+          animationType="slide"
+          presentationStyle="pageSheet"
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>แก้ไขสินค้า</Text>
+              <TouchableOpacity
+                onPress={() => setShowEditModal(false)}
+                style={styles.closeButton}
+              >
+                <Text style={styles.closeButtonText}>ปิด</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.modalBody}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>ชื่อสินค้า *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newProduct.name}
+                  onChangeText={(text) => setNewProduct({...newProduct, name: text})}
+                  placeholder="กรุณากรอกชื่อสินค้า"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>หมวดหมู่ *</Text>
+                <View style={styles.categorySelector}>
+                  {categories.filter(cat => cat !== 'ทั้งหมด').map(category => (
+                    <TouchableOpacity
+                      key={category}
+                      style={[
+                        styles.categoryOption,
+                        newProduct.category === category && styles.selectedCategory
+                      ]}
+                      onPress={() => setNewProduct({...newProduct, category})}
+                    >
+                      <Text style={[
+                        styles.categoryOptionText,
+                        newProduct.category === category && styles.selectedCategoryText
+                      ]}>
+                        {category}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>ราคา (บาท) *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newProduct.price}
+                  onChangeText={(text) => setNewProduct({...newProduct, price: text})}
+                  placeholder="0.00"
+                  keyboardType="numeric"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>จำนวนสต็อก *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newProduct.stock}
+                  onChangeText={(text) => setNewProduct({...newProduct, stock: text})}
+                  placeholder="0"
+                  keyboardType="numeric"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>ยี่ห้อ</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newProduct.brand}
+                  onChangeText={(text) => setNewProduct({...newProduct, brand: text})}
+                  placeholder="ยี่ห้อสินค้า"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>รายละเอียด</Text>
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  value={newProduct.description}
+                  onChangeText={(text) => setNewProduct({...newProduct, description: text})}
+                  placeholder="รายละเอียดสินค้า"
+                  multiline
+                  numberOfLines={3}
+                />
+              </View>
+
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={handleUpdateProduct}
+              >
+                <Text style={styles.submitButtonText}>อัพเดทสินค้า</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </Modal>
       </ScrollView>
     </SidebarLayout>
   );
@@ -387,13 +632,12 @@ export default function Inventory() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F9FAFB',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
   },
   loadingText: {
     marginTop: 10,
@@ -403,197 +647,254 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 24,
+    alignItems: 'flex-start',
+    padding: 20,
     backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    marginBottom: 10,
+    borderRadius: 10,
+    margin: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1E293B',
-    marginBottom: 4,
+    color: '#1F2937',
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#64748B',
+    color: '#6B7280',
+    marginTop: 4,
   },
   addButton: {
     backgroundColor: '#3B82F6',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderRadius: 8,
   },
   addButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   errorContainer: {
-    padding: 20,
+    backgroundColor: '#FEE2E2',
     margin: 20,
-    backgroundColor: '#FEF2F2',
-    borderRadius: 12,
+    padding: 15,
+    borderRadius: 10,
+    borderColor: '#F87171',
     borderWidth: 1,
-    borderColor: '#FECACA',
   },
   errorText: {
-    fontSize: 16,
     color: '#DC2626',
     textAlign: 'center',
     marginBottom: 10,
   },
   retryButton: {
     backgroundColor: '#DC2626',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 6,
+    alignSelf: 'center',
   },
   retryButtonText: {
     color: '#FFFFFF',
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   searchContainer: {
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    paddingHorizontal: 20,
+    marginBottom: 20,
   },
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    borderRadius: 10,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   searchIcon: {
     fontSize: 16,
-    marginRight: 12,
+    marginRight: 10,
   },
   searchInput: {
     flex: 1,
-    paddingVertical: 12,
     fontSize: 16,
-    color: '#1E293B',
   },
   filterContainer: {
-    marginBottom: 8,
+    marginBottom: 10,
   },
   filterButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 15,
     paddingVertical: 8,
+    backgroundColor: '#F3F4F6',
     borderRadius: 20,
-    backgroundColor: '#F1F5F9',
-    marginRight: 12,
+    marginRight: 10,
   },
-  activeFilter: {
+  activeFilterButton: {
     backgroundColor: '#3B82F6',
   },
-  filterText: {
+  filterButtonText: {
+    color: '#6B7280',
     fontSize: 14,
-    color: '#64748B',
   },
-  activeFilterText: {
+  activeFilterButtonText: {
     color: '#FFFFFF',
   },
-  tableContainer: {
-    padding: 20,
+  statsContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    marginBottom: 20,
   },
-  tableCard: {
+  statCard: {
+    flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    overflow: 'hidden',
+    padding: 15,
+    borderRadius: 10,
+    marginRight: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  tableHeader: {
+  statValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1F2937',
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 4,
+  },
+  listContainer: {
+    paddingHorizontal: 20,
+  },
+  emptyState: {
+    backgroundColor: '#FFFFFF',
+    padding: 40,
+    borderRadius: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  emptyStateText: {
+    color: '#6B7280',
+    fontSize: 16,
+  },
+  inventoryCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 10,
+  },
+  cardTitle: {
+    flex: 1,
+  },
+  itemName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1F2937',
+  },
+  itemSku: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  cardActions: {
+    flexDirection: 'row',
+  },
+  editButton: {
+    backgroundColor: '#10B981',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginRight: 8,
+  },
+  editButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  deleteButton: {
+    backgroundColor: '#EF4444',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  deleteButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  cardBody: {
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+    paddingTop: 10,
+  },
+  itemInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    marginBottom: 10,
   },
-  tableTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1E293B',
-  },
-  table: {
-    backgroundColor: '#FFFFFF',
-  },
-  tableHeaderRow: {
-    flexDirection: 'row',
-    backgroundColor: '#F8FAFC',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-  },
-  tableHeaderText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#64748B',
-    textTransform: 'uppercase',
-  },
-  tableRow: {
-    flexDirection: 'row',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-    alignItems: 'center',
-  },
-  tableCell: {
-    justifyContent: 'center',
-  },
-  tableCellText: {
+  itemCategory: {
     fontSize: 14,
-    color: '#1E293B',
-  },
-  productName: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#1E293B',
-    marginBottom: 2,
-  },
-  productSku: {
-    fontSize: 12,
-    color: '#64748B',
+    color: '#6B7280',
   },
   statusBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: 12,
   },
   statusText: {
+    color: '#FFFFFF',
     fontSize: 12,
+    fontWeight: 'bold',
+  },
+  itemDetails: {
+    gap: 5,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  detailLabel: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  detailValue: {
+    fontSize: 14,
+    color: '#1F2937',
     fontWeight: '500',
   },
-  emptyRow: {
-    padding: 40,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#64748B',
-  },
-
-  // Modal Styles
-  modalOverlay: {
+  modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    width: '90%',
-    maxWidth: 500,
-    maxHeight: '90%',
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    overflow: 'hidden',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -601,86 +902,79 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: '#F3F4F6',
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#1E293B',
+    fontWeight: 'bold',
+    color: '#1F2937',
   },
   closeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F1F5F9',
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 8,
   },
   closeButtonText: {
-    fontSize: 18,
-    color: '#64748B',
+    color: '#6B7280',
+    fontSize: 16,
   },
-  modalForm: {
+  modalBody: {
+    flex: 1,
     padding: 20,
-    maxHeight: 400,
   },
-  formGroup: {
+  inputGroup: {
     marginBottom: 20,
   },
-  formLabel: {
+  inputLabel: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
+    fontWeight: 'bold',
+    color: '#1F2937',
     marginBottom: 8,
   },
-  formInput: {
+  input: {
     borderWidth: 1,
     borderColor: '#D1D5DB',
     borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    padding: 12,
     fontSize: 16,
     backgroundColor: '#FFFFFF',
   },
-  formRow: {
+  textArea: {
+    height: 80,
+    textAlignVertical: 'top',
+  },
+  categorySelector: {
     flexDirection: 'row',
-    gap: 16,
-    marginBottom: 20,
+    flexWrap: 'wrap',
+    gap: 10,
   },
-  formHalf: {
-    flex: 1,
+  categoryOption: {
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
   },
-  modalFooter: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 12,
-    padding: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
+  selectedCategory: {
+    backgroundColor: '#3B82F6',
+    borderColor: '#3B82F6',
   },
-  cancelButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: '#F1F5F9',
-  },
-  cancelButtonText: {
+  categoryOptionText: {
+    color: '#6B7280',
     fontSize: 14,
-    color: '#64748B',
-    fontWeight: '500',
+  },
+  selectedCategoryText: {
+    color: '#FFFFFF',
   },
   submitButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
     backgroundColor: '#3B82F6',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 20,
   },
   submitButtonText: {
-    fontSize: 14,
     color: '#FFFFFF',
-    fontWeight: '600',
-  },
-  bottomSpacing: {
-    height: 24,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
