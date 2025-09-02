@@ -24,10 +24,12 @@ export default function Inventory() {
   const [selectedCategory, setSelectedCategory] = useState('ทั้งหมด');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+  const [deletingItem, setDeletingItem] = useState<InventoryItem | null>(null);
   
   const [newProduct, setNewProduct] = useState({
     name: '',
@@ -216,15 +218,39 @@ export default function Inventory() {
     }
   };
 
-  // ลบสินค้า (simplified for testing)
+  // ลบสินค้า
   const handleDeleteProduct = (item: InventoryItem) => {
     console.log('Delete function called for:', item.name);
+    setDeletingItem(item);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingItem) return;
     
-    // Simple test - just show a basic alert first
-    Alert.alert('ทดสอบ', `คุณต้องการลบ ${item.name} หรือไม่?`, [
-      { text: 'ยกเลิก' },
-      { text: 'ลบ', onPress: () => console.log('User confirmed delete') }
-    ]);
+    try {
+      setLoading(true);
+      console.log('Calling API delete for:', deletingItem.name);
+      
+      const response = await apiService.inventory.delete(parseInt(deletingItem.id));
+      console.log('API response:', response);
+      
+      if (response.success) {
+        console.log('Delete successful, reloading inventory');
+        await loadInventory();
+        setShowDeleteModal(false);
+        setDeletingItem(null);
+        // Success notification can be added here
+      } else {
+        console.error('Delete failed:', response.message);
+        // Error notification can be added here
+      }
+    } catch (err: any) {
+      console.error('Delete product error:', err);
+      // Error notification can be added here
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loading) {
@@ -609,6 +635,39 @@ export default function Inventory() {
             </ScrollView>
           </View>
         </Modal>
+
+        {/* Delete Confirmation Modal */}
+        <Modal
+          visible={showDeleteModal}
+          animationType="fade"
+          transparent={true}
+        >
+          <View style={styles.deleteModalOverlay}>
+            <View style={styles.deleteModalContent}>
+              <Text style={styles.deleteModalTitle}>ยืนยันการลบ</Text>
+              <Text style={styles.deleteModalMessage}>
+                ต้องการลบสินค้า "{deletingItem?.name}" หรือไม่?
+              </Text>
+              <View style={styles.deleteModalButtons}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => {
+                    setShowDeleteModal(false);
+                    setDeletingItem(null);
+                  }}
+                >
+                  <Text style={styles.cancelButtonText}>ยกเลิก</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.confirmDeleteButton}
+                  onPress={confirmDelete}
+                >
+                  <Text style={styles.confirmDeleteButtonText}>ลบ</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
     </SidebarLayout>
   );
@@ -960,6 +1019,63 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  deleteModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deleteModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 20,
+    margin: 20,
+    alignItems: 'center',
+    minWidth: 280,
+  },
+  deleteModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    marginBottom: 10,
+  },
+  deleteModalMessage: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  deleteModalButtons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: '#6B7280',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  confirmDeleteButton: {
+    flex: 1,
+    backgroundColor: '#EF4444',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  confirmDeleteButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });
