@@ -216,38 +216,15 @@ export default function Inventory() {
     }
   };
 
-  // ลบสินค้า
+  // ลบสินค้า (simplified for testing)
   const handleDeleteProduct = (item: InventoryItem) => {
-    Alert.alert(
-      'ยืนยันการลบ',
-      `ต้องการลบสินค้า "${item.name}" หรือไม่?`,
-      [
-        { text: 'ยกเลิก', style: 'cancel' },
-        { 
-          text: 'ลบ', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setLoading(true);
-              const response = await apiService.inventory.delete(parseInt(item.id));
-              
-              if (response.success) {
-                Alert.alert('สำเร็จ', 'ลบสินค้าแล้ว', [
-                  { text: 'ตกลง', onPress: () => loadInventory() }
-                ]);
-              } else {
-                throw new Error(response.message || 'Failed to delete product');
-              }
-            } catch (err: any) {
-              console.error('Delete product error:', err);
-              Alert.alert('ข้อผิดพลาด', 'ไม่สามารถลบสินค้าได้: ' + err.message);
-            } finally {
-              setLoading(false);
-            }
-          }
-        }
-      ]
-    );
+    console.log('Delete function called for:', item.name);
+    
+    // Simple test - just show a basic alert first
+    Alert.alert('ทดสอบ', `คุณต้องการลบ ${item.name} หรือไม่?`, [
+      { text: 'ยกเลิก' },
+      { text: 'ลบ', onPress: () => console.log('User confirmed delete') }
+    ]);
   };
 
   if (loading) {
@@ -368,13 +345,21 @@ export default function Inventory() {
                   <View style={styles.cardActions}>
                     <TouchableOpacity 
                       style={styles.editButton}
-                      onPress={() => handleEditProduct(item)}
+                      onPress={() => {
+                        console.log('Edit button pressed');
+                        handleEditProduct(item);
+                      }}
+                      activeOpacity={0.7}
                     >
                       <Text style={styles.editButtonText}>แก้ไข</Text>
                     </TouchableOpacity>
                     <TouchableOpacity 
                       style={styles.deleteButton}
-                      onPress={() => handleDeleteProduct(item)}
+                      onPress={() => {
+                        console.log('Delete button pressed');
+                        handleDeleteProduct(item);
+                      }}
+                      activeOpacity={0.7}
                     >
                       <Text style={styles.deleteButtonText}>ลบ</Text>
                     </TouchableOpacity>
