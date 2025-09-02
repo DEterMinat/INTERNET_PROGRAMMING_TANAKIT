@@ -424,13 +424,13 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/inventory/:id - Delete inventory item (soft delete)
+// DELETE /api/inventory/:id - Delete inventory item (hard delete)
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
     // Check if item exists
-    const checkQuery = `SELECT id, name FROM products WHERE id = ? AND isActive = 1`;
+    const checkQuery = `SELECT id, name FROM products WHERE id = ?`;
     const existingItem = await executeQuery(checkQuery, [id]);
 
     if (!existingItem || existingItem.length === 0) {
@@ -440,18 +440,15 @@ router.delete('/:id', async (req, res) => {
       });
     }
 
-    // Soft delete - set isActive to 0
-    const deleteQuery = `
-      UPDATE products 
-      SET isActive = 0, updated_at = NOW() 
-      WHERE id = ?
-    `;
+    // Hard delete - permanently remove from database
+    const deleteQuery = `DELETE FROM products WHERE id = ?`;
+    const result = await executeQuery(deleteQuery, [id]);
 
-    await executeQuery(deleteQuery, [id]);
+    console.log('Delete result:', result);
 
     res.json({
       success: true,
-      message: `ลบสินค้า "${existingItem[0].name}" จากคลังสำเร็จ`
+      message: `ลบสินค้า "${existingItem[0].name}" จากคลังสำเร็จ (ลบถาวร)`
     });
   } catch (error) {
     console.error('Error deleting inventory item:', error);
