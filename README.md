@@ -1,29 +1,78 @@
-# Welcome to your Expo app 👋
+# Internet Programming - Final Assignment 📱
+**Product Management System**
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Student ID: std6630202261  
+Student Name: TANAKIT  
+Subject: Internet Programming  
 
-## Get started
+## 🎯 Project Overview
 
-1. Install dependencies
+This is a complete **Product Management System** built with **React Native** (frontend) and **Express.js/Node.js** (backend), connected to a **MySQL database** hosted on the cloud server `nindam.sytes.net`.
 
-   ```bash
-   npm install
-   ```
+### ✨ Features
+- ✅ **Show** products and inventory
+- ✅ **Insert** new products  
+- ✅ **Edit** existing products
+- ✅ **Delete** products
+- ✅ **Search** and filter products
+- ✅ User authentication
+- ✅ Responsive mobile interface
 
-2. Start the app
+## 🛠️ Technology Stack
 
-   ```bash
-   npx expo start
-   ```
+### Frontend
+- **React Native** with Expo
+- **TypeScript**
+- **Expo Router** for navigation
+- **React Native components**
 
-In the output, you'll find options to open the app in a
+### Backend  
+- **Express.js** 
+- **Node.js**
+- **MySQL2** for database connectivity
+- **JSON Web Tokens (JWT)** for authentication
+- **CORS** enabled for cross-origin requests
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Database
+- **MySQL** hosted on `nindam.sytes.net`
+- Complete database schema with relations
+- Sample data included
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 🚀 Quick Start
+
+### 1. Frontend Setup
+
+```bash
+# Install dependencies
+npm install
+
+# Start the Expo development server
+npx expo start --port 30019
+```
+
+### 2. Backend Setup
+
+```bash
+# Navigate to backend directory
+cd BACKEND
+
+# Install dependencies  
+npm install
+
+# Start the backend server
+npm run dev
+# OR for production
+npm start
+```
+
+### 3. Database Setup
+
+The database is already configured and hosted on:
+- **Host**: nindam.sytes.net
+- **Database**: it_std6630202261
+- **User**: std6630202261
+
+## 📱 Mobile App Features
 
 ## Get a fresh project
 
