@@ -68,7 +68,7 @@ export default function Inventory() {
           stock: item.stock || 0,
           unit: 'ชิ้น',
           location: item.location || 'ไม่ระบุ',
-          status: item.stock <= 10 ? 'low_stock' : 'active',
+          status: item.stock < 5 ? 'low_stock' : 'active',
           lastUpdated: item.lastRestocked || new Date().toISOString().split('T')[0],
           image: item.image,
           brand: item.supplier,

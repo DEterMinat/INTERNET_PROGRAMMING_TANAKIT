@@ -321,7 +321,7 @@ export default function Products() {
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statValue}>
-              {products.filter(product => product.stock <= 10).length}
+              {products.filter(product => product.stock < 5).length}
             </Text>
             <Text style={styles.statLabel}>สต็อกต่ำ</Text>
           </View>
@@ -376,7 +376,7 @@ export default function Products() {
                       <Text style={styles.detailLabel}>สต็อก:</Text>
                       <Text style={[
                         styles.detailValue, 
-                        product.stock <= 10 && styles.lowStock
+                        product.stock < 5 && styles.lowStock
                       ]}>
                         {product.stock} ชิ้น
                       </Text>

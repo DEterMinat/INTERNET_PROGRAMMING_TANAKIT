@@ -74,26 +74,109 @@ The database is already configured and hosted on:
 
 ## 📱 Mobile App Features
 
-## Get a fresh project
+### ✅ Stock Inventory App (Final Exam Requirements)
 
-When you're ready, run:
+1. **Add Product** ✅
+   - Input product data (name, category, price, stock, brand, description)
+   - Upload image (URL input)
+   - Form validation and error handling
 
+2. **Edit Product** ✅
+   - Update existing product data
+   - Pre-filled form with current data
+   - Real-time updates
+
+3. **Delete Product** ✅
+   - Remove product from stock
+   - Confirmation dialog before deletion
+   - Cascade delete handling
+
+4. **Show Products** ✅
+   - Display all product list
+   - Grid/Card view with product details
+   - Pagination support
+   - Real-time data refresh
+
+5. **Search** ✅
+   - Find products by name or keyword
+   - Filter by category
+   - Search by brand
+   - Real-time search results
+
+6. **Low Stock Alert** ✅
+   - Highlight products where **stock < 5**
+   - Visual warning indicators (red color)
+   - Low stock counter in dashboard
+   - Status badge on product cards
+
+### 📊 Dashboard Statistics
+- Total products count
+- Total stock value
+- Low stock items (stock < 5)
+- Category distribution
+
+## 🎓 Final-Term Exam Ready
+
+**Exam Date**: Thursday, October 16, 2025  
+**Time Limit**: 2:30 Hours  
+**Format**: Practical + Written
+
+### Technology Stack ✅
+- ✅ Frontend: React Native (Mobile App)
+- ✅ Backend: Express.js + Node.js
+- ✅ Database: MySQL on nindam.sytes.net
+
+### All Required Features ✅
+- ✅ Add Product
+- ✅ Edit Product
+- ✅ Delete Product
+- ✅ Show Products
+- ✅ Search
+- ✅ Low Stock Alert (stock < 5)
+
+## 🚀 Quick Start for Exam
+
+### Start Frontend
 ```bash
-npm run reset-project
+npm install
+npx expo start --port 30019
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Start Backend
+```bash
+cd BACKEND
+npm install
+npm run dev
+```
 
-## Learn more
+## 📡 API Endpoints
 
-To learn more about developing your project with Expo, look at the following resources:
+### Products
+- `GET /api/products` - Get all products
+- `GET /api/products/:id` - Get product by ID
+- `POST /api/products` - Create new product
+- `PUT /api/products/:id` - Update product
+- `DELETE /api/products/:id` - Delete product
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Inventory
+- `GET /api/inventory` - Get all inventory items
+- `POST /api/inventory` - Add inventory item
+- `PUT /api/inventory/:id` - Update inventory
+- `DELETE /api/inventory/:id` - Delete inventory item
 
-## Join the community
+### Database
+- **Host**: nindam.sytes.net
+- **Database**: it_std6630202261
+- **Port**: 3306
 
-Join our community of developers creating universal apps.
+## 📝 Notes
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- User Login is NOT required for the exam
+- Low Stock Alert triggers when stock < 5
+- All data is stored in MySQL cloud database
+- JSON format for all API requests/responses
+
+---
+
+**Student ID**: std6630202261  
+**Ready for Final-Term Exam** ✅
