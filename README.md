@@ -169,6 +169,28 @@ npm run dev
 - **Database**: it_std6630202261
 - **Port**: 3306
 
+## 🧾 Final Exam Table (Tanakit)
+
+A dedicated table for the final exam is available:
+
+- **Table name:** `FinalExam_Tanakit_Siriteerapan_Inventory`
+- **Prefix:** `6630202261`
+- **Fields:**
+  - `6630202261_ID_Product` (PRIMARY KEY)
+  - `6630202261_Name_Product`
+  - `6630202261_Qty_Stock`
+  - `6630202261_Price_Unit`
+  - `6630202261_Img_Path`
+
+### API endpoints
+- `GET /api/final-inventory` - list all final-exam items
+- `GET /api/final-inventory/:id` - get single item
+- `POST /api/final-inventory` - create item (body: { name, qty, price, img })
+- `PUT /api/final-inventory/:id` - update item
+- `DELETE /api/final-inventory/:id` - delete item
+
+You can test this route using the example frontend screen at `app/(tabs)/final-inventory.tsx`.
+
 ## 📝 Notes
 
 - User Login is NOT required for the exam

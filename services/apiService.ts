@@ -295,6 +295,39 @@ class ApiService {
       return fetch(`${this.baseUrl}${endpoint}`).then(res => res.json());
     }
   };
+
+  // Final Exam Inventory API Methods
+  finalInventory = {
+    // GET /api/final-inventory - list
+    getList: async () => {
+      const endpoint = '/api/final-inventory';
+      return this.request(endpoint);
+    },
+
+    // GET /api/final-inventory/:id
+    getById: async (id: number) => {
+      const endpoint = `/api/final-inventory/${id}`;
+      return this.request(endpoint);
+    },
+
+    // POST /api/final-inventory
+    create: async (data: { name: string; qty: number; price: number; img?: string }) => {
+      const endpoint = '/api/final-inventory';
+      return this.request(endpoint, { method: 'POST', body: JSON.stringify({ name: data.name, qty: data.qty, price: data.price, img: data.img }) });
+    },
+
+    // PUT /api/final-inventory/:id
+    update: async (id: number, data: { name?: string; qty?: number; price?: number; img?: string }) => {
+      const endpoint = `/api/final-inventory/${id}`;
+      return this.request(endpoint, { method: 'PUT', body: JSON.stringify(data) });
+    },
+
+    // DELETE /api/final-inventory/:id
+    delete: async (id: number) => {
+      const endpoint = `/api/final-inventory/${id}`;
+      return this.request(endpoint, { method: 'DELETE' });
+    }
+  };
 }
 
 // Export singleton instance

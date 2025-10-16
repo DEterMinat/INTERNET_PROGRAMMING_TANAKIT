@@ -69,6 +69,7 @@ app.use('/api/inventory', require('./routes/inventory'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
+app.use('/api/final-inventory', require('./routes/final-inventory'));
 
 // Root endpoint
 app.get('/', (req, res) => {
