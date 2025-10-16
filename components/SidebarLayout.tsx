@@ -45,6 +45,14 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
       badge: '156',
     },
     {
+      id: 'final-inventory',
+      title: 'Final Inventory',
+      subtitle: 'สอบปลายภาค 6630202261',
+      icon: 'https://img.icons8.com/fluency/28/test-passed.png',
+      route: '/final-inventory',
+      badge: null,
+    },
+    {
       id: 'products',
       title: 'สินค้า',
       subtitle: 'รายการสินค้า',
