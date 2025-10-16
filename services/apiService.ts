@@ -342,29 +342,43 @@ class ApiService {
       // Extract filename from URI
       const filename = fileUri.split('/').pop() || 'image.jpg';
       const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : 'image/jpeg';
-
-      // Append file to FormData
-      formData.append('image', {
-        uri: fileUri,
-        name: filename,
-        type: type,
-      } as any);
+      const extensionType = match ? `image/${match[1]}` : 'image/jpeg';
 
       try {
-        const response = await fetch(url, {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        // Check if running on web (browser)
+        if (typeof window !== 'undefined' && (fileUri.startsWith('blob:') || fileUri.startsWith('data:'))) {
+          // For web: Convert blob/data URL to File object
+          const response = await fetch(fileUri);
+          const blob = await response.blob();
+          
+          // Use blob's actual type if available, otherwise use extension-based type
+          const actualType = blob.type || extensionType;
+          console.log('Uploading file:', filename, 'Type:', actualType, 'Size:', blob.size);
+          
+          const file = new File([blob], filename, { type: actualType });
+          formData.append('image', file);
+        } else {
+          // For React Native: Use uri, name, type format
+          formData.append('image', {
+            uri: fileUri,
+            name: filename,
+            type: extensionType,
+          } as any);
         }
 
-        return await response.json();
+        const uploadResponse = await fetch(url, {
+          method: 'POST',
+          body: formData,
+          // Don't set Content-Type header, let browser/fetch set it with boundary
+        });
+
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text();
+          console.error('Upload failed with status:', uploadResponse.status, errorText);
+          throw new Error(`HTTP error! status: ${uploadResponse.status}`);
+        }
+
+        return await uploadResponse.json();
       } catch (error) {
         console.error(`Upload Error for ${url}:`, error);
         throw error;

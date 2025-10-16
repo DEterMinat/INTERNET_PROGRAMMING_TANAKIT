@@ -188,9 +188,10 @@ export default function FinalInventoryScreen() {
       });
 
       if (response.success) {
-        Alert.alert('สำเร็จ', 'เพิ่มสินค้าใหม่แล้ว', [
-          { text: 'ตกลง', onPress: () => loadInventory() }
-        ]);
+        // Refresh display ทันทีหลังจาก INSERT สำเร็จ
+        await loadInventory();
+        
+        Alert.alert('สำเร็จ', 'เพิ่มสินค้าใหม่แล้ว');
         setNewProduct({
           name: '',
           category: 'น้ำดื่ม',
@@ -246,9 +247,10 @@ export default function FinalInventoryScreen() {
       });
 
       if (response.success) {
-        Alert.alert('สำเร็จ', 'อัพเดทสินค้าเรียบร้อย', [
-          { text: 'ตกลง', onPress: () => loadInventory() }
-        ]);
+        // Refresh display ทันทีหลังจาก UPDATE สำเร็จ
+        await loadInventory();
+        
+        Alert.alert('สำเร็จ', 'อัพเดทสินค้าเรียบร้อย');
         setNewProduct({
           name: '',
           category: 'น้ำดื่ม',
@@ -285,9 +287,10 @@ export default function FinalInventoryScreen() {
       const response = await apiService.finalInventory.delete(parseInt(deletingItem.id));
 
       if (response.success) {
-        Alert.alert('สำเร็จ', 'ลบสินค้าเรียบร้อย', [
-          { text: 'ตกลง', onPress: () => loadInventory() }
-        ]);
+        // Refresh display ทันทีหลังจาก DELETE สำเร็จ
+        await loadInventory();
+        
+        Alert.alert('สำเร็จ', 'ลบสินค้าเรียบร้อย');
         setShowDeleteModal(false);
         setDeletingItem(null);
       } else {
@@ -437,7 +440,11 @@ export default function FinalInventoryScreen() {
 
                 <View style={styles.cardBody}>
                   {item.img && (
-                    <Image source={{ uri: item.img }} style={styles.itemImage} />
+                    <Image 
+                      source={{ uri: item.img }} 
+                      style={styles.itemImage}
+                      resizeMode="cover"
+                    />
                   )}
                   
                   <View style={styles.itemInfo}>
@@ -556,7 +563,11 @@ export default function FinalInventoryScreen() {
                 
                 {selectedImageUri && (
                   <View style={styles.imagePreview}>
-                    <Image source={{ uri: selectedImageUri }} style={styles.previewImage} />
+                    <Image 
+                      source={{ uri: selectedImageUri }} 
+                      style={styles.previewImage}
+                      resizeMode="contain"
+                    />
                     <TouchableOpacity
                       style={styles.removeImageButton}
                       onPress={() => {
@@ -699,7 +710,11 @@ export default function FinalInventoryScreen() {
                 
                 {selectedImageUri && (
                   <View style={styles.imagePreview}>
-                    <Image source={{ uri: selectedImageUri }} style={styles.previewImage} />
+                    <Image 
+                      source={{ uri: selectedImageUri }} 
+                      style={styles.previewImage}
+                      resizeMode="contain"
+                    />
                     <TouchableOpacity
                       style={styles.removeImageButton}
                       onPress={() => {
@@ -1018,10 +1033,11 @@ const styles = StyleSheet.create({
   },
   itemImage: {
     width: '100%',
-    height: 200,
+    height: 180,
     borderRadius: 8,
     marginBottom: 10,
     backgroundColor: '#F3F4F6',
+    resizeMode: 'cover',
   },
   itemInfo: {
     flexDirection: 'row',
@@ -1132,12 +1148,14 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginBottom: 12,
     alignItems: 'center',
+    width: '100%',
   },
   previewImage: {
     width: '100%',
-    height: 200,
+    height: 250,
     borderRadius: 12,
     backgroundColor: '#F3F4F6',
+    resizeMode: 'contain',
   },
   removeImageButton: {
     position: 'absolute',
