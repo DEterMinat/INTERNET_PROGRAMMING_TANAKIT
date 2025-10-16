@@ -62,6 +62,9 @@ app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files from uploads directory
+app.use('/uploads', express.static('uploads'));
+
 // Routes (remove duplicates)
 app.use('/api/products', require('./routes/products'));
 app.use('/api/db-products', require('./routes/db-products'));
@@ -70,6 +73,7 @@ app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/final-inventory', require('./routes/final-inventory'));
+app.use('/api/upload', require('./routes/upload'));
 
 // Root endpoint
 app.get('/', (req, res) => {

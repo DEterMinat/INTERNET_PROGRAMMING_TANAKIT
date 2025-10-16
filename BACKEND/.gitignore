@@ -54,3 +54,7 @@ jspm_packages/
 # OS
 .DS_Store
 Thumbs.db
+
+# Uploaded files
+uploads/
+!uploads/.gitkeep

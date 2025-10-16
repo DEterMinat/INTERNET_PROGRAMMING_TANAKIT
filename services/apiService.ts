@@ -328,6 +328,55 @@ class ApiService {
       return this.request(endpoint, { method: 'DELETE' });
     }
   };
+
+  // Upload API Methods
+  upload = {
+    // POST /api/upload - Upload image file
+    uploadImage: async (fileUri: string): Promise<ApiResponse<{ filename: string; url: string; path: string }>> => {
+      const endpoint = '/api/upload';
+      const url = `${this.baseUrl}${endpoint}`;
+
+      // Create FormData
+      const formData = new FormData();
+      
+      // Extract filename from URI
+      const filename = fileUri.split('/').pop() || 'image.jpg';
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+      // Append file to FormData
+      formData.append('image', {
+        uri: fileUri,
+        name: filename,
+        type: type,
+      } as any);
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.error(`Upload Error for ${url}:`, error);
+        throw error;
+      }
+    },
+
+    // DELETE /api/upload/:filename - Delete uploaded image
+    deleteImage: async (filename: string) => {
+      const endpoint = `/api/upload/${filename}`;
+      return this.request(endpoint, { method: 'DELETE' });
+    }
+  };
 }
 
 // Export singleton instance

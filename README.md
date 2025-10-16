@@ -189,6 +189,20 @@ A dedicated table for the final exam is available:
 - `PUT /api/final-inventory/:id` - update item
 - `DELETE /api/final-inventory/:id` - delete item
 
+### Image Upload Feature 📸
+- `POST /api/upload` - upload product image (multipart/form-data)
+- `DELETE /api/upload/:filename` - delete uploaded image
+- `GET /uploads/:filename` - access uploaded images
+
+**Features:**
+- 📁 Pick images from gallery
+- 📷 Take photos with camera
+- ⬆️ Automatic upload to server
+- 🖼️ Preview before submission
+- 💾 URLs stored in database
+
+See **[IMAGE_UPLOAD_GUIDE.md](./IMAGE_UPLOAD_GUIDE.md)** for complete installation and usage instructions.
+
 You can test this route using the example frontend screen at `app/(tabs)/final-inventory.tsx`.
 
 ## 📝 Notes
